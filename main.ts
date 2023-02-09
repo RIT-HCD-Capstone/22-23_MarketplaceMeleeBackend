@@ -1,4 +1,5 @@
 import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify'
+import { WebSocket } from 'ws'
 import { Server, IncomingMessage, ServerResponse } from 'http'
 import { nanoid } from 'nanoid'
 
@@ -107,16 +108,16 @@ server.route({
 })
 
 //TODO get websockets working
-// server.register(require('@fastify/websocket'))
+server.register(require('@fastify/websocket'))
 
-// server.register(async function (server) {
-//   server.get('/socket', { websocket: "true" }, (connection /* SocketStream */, req /* FastifyRequest */) => {
-//     connection.socket.on('message', message => {
-//       // message.toString() === 'hi from client'
-//       connection.socket.send('hi from server')
-//     })
-//   })
-// })
+server.register(async function (server) {
+  server.get('/socket', { websocket: "true" }, (connection /* SocketStream */, req /* FastifyRequest */) => {
+    connection.socket.on('message', message => {
+      // message.toString() === 'hi from client'
+      connection.socket.send('hi from server')
+    })
+  })
+})
 
 const start = async () => {
   try {
