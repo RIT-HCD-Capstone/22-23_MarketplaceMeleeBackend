@@ -70,48 +70,6 @@ const server: FastifyInstance = Fastify({
   },
 })
 
-const opts: RouteShorthandOptions = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          pong: {
-            type: 'string'
-          }
-        }
-      }
-    }
-  }
-}
-
-server.get('/ping', opts, async (request, reply) => {
-  return { pong: 'it worked!' }
-})
-
-server.route({
-  method: 'GET',
-  url: '/',
-  schema: {
-    querystring: {
-      name: { type: 'string' },
-      excitement: { type: 'integer' }
-    },
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          hello: { type: 'string' }
-        }
-      }
-    }
-  },
-  handler: function (request, reply) {
-    reply.send({ hello: 'world' })
-  }
-})
-
-//TODO get websockets working
 server.register(require('@fastify/websocket'))
 
 server.register(async function (server) {
