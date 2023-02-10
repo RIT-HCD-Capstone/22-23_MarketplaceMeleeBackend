@@ -1,7 +1,10 @@
-import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify'
+import Fastify, { FastifyInstance, FastifyRequest, RouteShorthandOptions } from 'fastify'
 import { WebSocket } from 'ws'
+import { SocketStream, WebsocketHandler } from '@fastify/websocket'
+import { WebsocketPluginOptions } from '@fastify/websocket'
 import { Server, IncomingMessage, ServerResponse } from 'http'
-import { nanoid } from 'nanoid'
+// import { nanoid } from 'nanoid'
+// const nanoid = await import('nanoid')
 
 type GameState = "setup" | "move" | "declare" | "resolve" | "event"
 type PlayerStance = "Attack" | "Defend" | "Act"
@@ -34,7 +37,8 @@ interface Game {
 
 function newGame(): Game {
   let game: Game = {
-    id: nanoid(),
+    // id: nanoid(6),
+    id: "testid",
     players: [],
     state: "setup"
   }
@@ -111,10 +115,14 @@ server.route({
 server.register(require('@fastify/websocket'))
 
 server.register(async function (server) {
-  server.get('/socket', { websocket: "true" }, (connection /* SocketStream */, req /* FastifyRequest */) => {
+  server.get('/socket', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
+    console.log("client connected!")
     connection.socket.on('message', message => {
       // message.toString() === 'hi from client'
       connection.socket.send('hi from server')
+    })
+    connection.socket.on('close', () => {
+      console.log("client disconnected.")
     })
   })
 })
