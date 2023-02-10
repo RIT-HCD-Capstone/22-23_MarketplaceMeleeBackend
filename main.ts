@@ -71,13 +71,12 @@ const server: FastifyInstance = Fastify({
       target: "@fastify/one-line-logger",
     },
   },
+  trustProxy: true,
 })
 
-const fastify = require('fastify')({
-  trustProxy: true
 })
 
-fastify.register(require('fastify-https-always'))
+server.register(require('fastify-https-always'))
 
 server.register(require('@fastify/helmet'))
 
