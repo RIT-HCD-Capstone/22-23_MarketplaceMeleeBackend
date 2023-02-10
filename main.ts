@@ -3,6 +3,9 @@ import { WebSocket } from 'ws'
 import { SocketStream, WebsocketHandler } from '@fastify/websocket'
 import { WebsocketPluginOptions } from '@fastify/websocket'
 import { Server, IncomingMessage, ServerResponse } from 'http'
+import dotenv from "dotenv"
+dotenv.config()
+// import { fastifyHelmet } from "@fastify/helmet";
 // import { nanoid } from 'nanoid'
 // const nanoid = await import('nanoid')
 
@@ -70,6 +73,14 @@ const server: FastifyInstance = Fastify({
   },
 })
 
+const fastify = require('fastify')({
+  trustProxy: true
+})
+
+fastify.register(require('fastify-https-always'))
+
+server.register(require('@fastify/helmet'))
+
 server.register(require('@fastify/websocket'))
 
 server.register(async function (server) {
@@ -77,6 +88,7 @@ server.register(async function (server) {
     console.log("client connected!")
     connection.socket.on('message', message => {
       // message.toString() === 'hi from client'
+      console.log('message from client: ' + message)
       connection.socket.send('hi from server')
     })
     connection.socket.on('close', () => {
@@ -87,7 +99,7 @@ server.register(async function (server) {
 
 const start = async () => {
   try {
-    await server.listen({ port: 3883, host: '0.0.0.0' })
+    await server.listen({ port: process.env.PORT || 3883, host: '0.0.0.0' })
 
     const address = server.server.address()
     const port = typeof address === 'string' ? address : address?.port
