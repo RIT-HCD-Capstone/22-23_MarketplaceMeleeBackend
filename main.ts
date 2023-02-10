@@ -74,6 +74,23 @@ const server: FastifyInstance = Fastify({
   trustProxy: true,
 })
 
+const opts: RouteShorthandOptions = {
+  schema: {
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          pong: {
+            type: 'string'
+          }
+        }
+      }
+    }
+  }
+}
+
+server.get('/ping', opts, async (request, reply) => {
+  return { pong: 'it worked!' }
 })
 
 server.register(require('fastify-https-always'))
