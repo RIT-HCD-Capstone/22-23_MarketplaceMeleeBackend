@@ -3,11 +3,6 @@ import { WebSocket } from 'ws'
 import { SocketStream, WebsocketHandler } from '@fastify/websocket'
 import { WebsocketPluginOptions } from '@fastify/websocket'
 import { Server, IncomingMessage, ServerResponse } from 'http'
-import dotenv from "dotenv"
-dotenv.config()
-// import { fastifyHelmet } from "@fastify/helmet";
-// import { nanoid } from 'nanoid'
-// const nanoid = await import('nanoid')
 
 type GameState = "setup" | "move" | "declare" | "resolve" | "event"
 type PlayerStance = "Attack" | "Defend" | "Act"
@@ -40,7 +35,6 @@ interface Game {
 
 function newGame(): Game {
   let game: Game = {
-    // id: nanoid(6),
     id: "testid",
     players: [],
     state: "setup"
