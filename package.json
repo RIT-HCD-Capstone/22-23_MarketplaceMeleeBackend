@@ -5,7 +5,9 @@
     "@fastify/sensible": "^5.2.0",
     "@fastify/websocket": "^7.1.2",
     "fastify": "^4.12.0",
-    "fastify-https-always": "^1.0.0"
+    "fastify-https-always": "^1.0.0",
+    "nanoid": "^4.0.1",
+    "random-words": "^1.2.1"
   },
   "devDependencies": {
     "@types/ws": "^8.5.4",
