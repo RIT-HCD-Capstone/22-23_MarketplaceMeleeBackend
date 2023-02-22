@@ -3,7 +3,7 @@ import Fastify, {
   FastifyRequest,
   RouteShorthandOptions,
 } from "fastify";
-import { WebSocket } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import { SocketStream, WebsocketHandler } from "@fastify/websocket";
 import { WebsocketPluginOptions } from "@fastify/websocket";
 import { IncomingMessage, Server, ServerResponse } from "http";
@@ -26,6 +26,7 @@ interface Item {
 interface Player {
   // id: number,
   id: string;
+  socket: WebSocket;
   // state: GameState,
   // stance: PlayerStance,
   value: number;
@@ -52,10 +53,10 @@ class Game {
   }
 
   changeState(data: string): void {
-    //todo check if ALL players are ready to transition to next state
-    //todo change to next state
-    //todo increment turn
-    //todo trigger effects
+    // TODO check if ALL players are ready to transition to next state
+    // TODO change to next state
+    // TODO increment turn
+    // TODO trigger effects
     switch (data) {
       case "setup":
         currentGame.state = "move";
@@ -106,21 +107,37 @@ server.get("/", opts, async (_request, _reply) => {
 
 server.register(require("fastify-https-always"));
 server.register(require("@fastify/helmet"));
-server.register(require("@fastify/websocket"));
+server.register(require("@fastify/websocket"), {
+  options: { clientTracking: true },
+});
+
+const messageBuilder = (
+  server: FastifyInstance,
+  message: string,
+): void => {
+  // send to all connected clients instead of echoing
+  server.websocketServer.clients.forEach((client) => {
+    client.send(message);
+  });
+};
 
 server.register(async function (server) {
   server.get(
     "/socket",
     { websocket: true },
     (connection: SocketStream, req: FastifyRequest) => {
-      console.log("new client connected!");
       let newClientId: string = randomWords();
-      connection.socket.send("newClientConnected:" + newClientId);
+      console.log("client connected: " + newClientId);
+      console.log(server.websocketServer.clients.entries());
+      // server.websocketServer.clients.
+
+      messageBuilder(server, "s: clientConnected: " + newClientId);
+
       connection.socket.on("message", (data) => {
         let message = data.toString();
-        console.log("message from client: " + message);
+        console.log("recieved: " + message);
         let messageData = message.split(":");
-        switch (messageData[0]) {
+        switch (messageData[1]) {
           case "newGame":
             currentGame = new Game();
             console.log("new game started!");
@@ -166,7 +183,7 @@ server.register(async function (server) {
         // connection.socket.send('hi from server')
       });
       connection.socket.on("close", () => {
-        console.log("client disconnected.");
+        console.log("client " + newClientId + " disconnected.");
       });
     },
   );
