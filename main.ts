@@ -26,7 +26,7 @@ interface Item {
 interface Player {
   // id: number,
   id: string;
-  socket: WebSocket;
+  // socket: WebSocket;
   // state: GameState,
   // stance: PlayerStance,
   value: number;
