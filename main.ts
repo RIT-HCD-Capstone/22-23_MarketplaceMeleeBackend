@@ -3,10 +3,7 @@ import Fastify, {
   FastifyRequest,
   RouteShorthandOptions,
 } from "fastify";
-import { WebSocket, WebSocketServer } from "ws";
 import { SocketStream, WebsocketHandler } from "@fastify/websocket";
-import { WebsocketPluginOptions } from "@fastify/websocket";
-import { IncomingMessage, Server, ServerResponse } from "http";
 var randomWords = require("random-words");
 
 type GameState = "setup" | "move" | "declareStance" | "resolve" | "event";
@@ -128,10 +125,10 @@ server.register(async function (server) {
     (connection: SocketStream, req: FastifyRequest) => {
       let newClientId: string = randomWords();
       console.log("client connected: " + newClientId);
-      console.log(server.websocketServer.clients.entries());
+      // console.log(server.websocketServer.clients.entries());
       // server.websocketServer.clients.
 
-      messageBuilder(server, "s: clientConnected: " + newClientId);
+      messageBuilder(server, "SERVER:clientConnected:" + newClientId);
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
@@ -140,18 +137,20 @@ server.register(async function (server) {
         switch (messageData[1]) {
           case "newGame":
             currentGame = new Game();
-            console.log("new game started!");
-            connection.socket.send("gameStarted");
+            console.log(messageData[0] + " started a new game!");
+            connection.socket.send(messageData[0] + "gameStarted");
             break;
           case "newPlayer":
-            if (!(typeof currentGame === undefined)) {
+            if (!(typeof currentGame === undefined)) { // TODO this check does not work
               console.log("Game not started yet!");
-              connection.socket.send("error:noGameExists");
+              // connection.socket.send("SERVER:error:noGameExists");
+              messageBuilder(server, "SERVER:error:noGameExists");
               break;
             }
             currentGame.newPlayer(messageData[1]);
             console.log("new player added!");
-            console.log("Players:");
+            // console.log("SERVER:players:new:" + messageData[0]);
+            messageBuilder(server, "SERVER:players:new");
             for (const player in currentGame.players) {
               if (
                 Object.prototype.hasOwnProperty.call(
@@ -165,7 +164,7 @@ server.register(async function (server) {
             }
             break;
           case "changeState":
-            //TODO check that all players are ready to move to next phase
+            // TODO check that all players are ready to move to next phase
             currentGame.changeState(messageData[1]);
             connection.socket.send(
               "turn: " + currentGame.currentTurn + "\nphase: " +
@@ -173,7 +172,7 @@ server.register(async function (server) {
             );
             break;
           // case "nextTurn": NOTE this is gonna get taken care of in Game.changeState()
-          //   //TODO check that all players have ended their turns
+          //   // TODO check that all players have ended their turns
           //   currentGame.currentTurn++;
           //   connection.socket.send("startTurn: " + currentGame.currentTurn);
           //   break;
@@ -183,7 +182,8 @@ server.register(async function (server) {
         // connection.socket.send('hi from server')
       });
       connection.socket.on("close", () => {
-        console.log("client " + newClientId + " disconnected.");
+        messageBuilder(server, "SERVER:" + newClientId + ":disconnected");
+        // console.log("client" + newClientId + " disconnected.");
       });
     },
   );
