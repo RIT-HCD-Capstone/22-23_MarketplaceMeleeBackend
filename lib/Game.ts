@@ -9,10 +9,11 @@ type TurnState =
   | "move"
   | "declareStance"
   | "resolve";
-type DecayValues = 0 | 5 | 15 | 40 | 65 | 105 | 170 | 275;
+// type DecayValues = 0 | 5 | 15 | 40 | 65 | 105 | 170 | 275;
 
-// Modifiers
+// Modifiers & permanants
 const MONOPOLIZE_BONUS: number = 5; // multiplicative
+const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275];
 
 export default class Game {
   id: string = "testid";
@@ -28,6 +29,7 @@ export default class Game {
       value: 100,
       items: [],
       stance: null,
+      readyState: false,
     };
     this.players.push(player);
     return true;
@@ -49,9 +51,23 @@ export default class Game {
     return true;
   }
 
+  checkPlayerReadyState(): boolean {
+    function eachPlayer(element: Player): boolean {
+      if (element.readyState) return true;
+      return false;
+    }
+    return this.players.every(eachPlayer);
+  }
+
+  applyPlayerDecay(): void {
+    const decay = (element: Player): void => {
+      element.value = element.value - DECAY_VALUES[this.turn];
+    };
+    this.players.every(decay);
+  }
+
   changeGameState(state: GameState): boolean {
-    // TODO check if ALL players are ready to transition to next state
-    // TODO change to next state
+    if (!this.checkPlayerReadyState()) return false;
     switch (state) {
       case "setup":
         this.gameState = "setup";
@@ -63,8 +79,7 @@ export default class Game {
   }
 
   changeTurnState(state: TurnState): boolean {
-    // TODO check if ALL players are ready to transition to next state
-    // TODO change to next state
+    if (!this.checkPlayerReadyState()) return false;
     // TODO increment turn
     // TODO trigger effects
     switch (state) {
@@ -72,6 +87,7 @@ export default class Game {
         this.turnState = "event";
         return true;
       case "calculate":
+        if (!this.checkPlayerReadyState()) return false;
         this.turnState = "calculate";
         this.calcTurnOrder();
         return true;
@@ -79,13 +95,18 @@ export default class Game {
         this.turnState = "shop";
         return true;
       case "move":
+        if (!this.checkPlayerReadyState()) return false;
         this.turnState = "move";
         return true;
       case "declareStance":
+        if (!this.checkPlayerReadyState()) return false;
         this.turnState = "declareStance";
         return true;
       case "resolve":
+        if (!this.checkPlayerReadyState()) return false;
         this.turnState = "resolve";
+        this.applyPlayerDecay();
+        this.turn++;
         return true;
     }
   }

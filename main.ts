@@ -80,7 +80,8 @@ server.register(async function (server) {
     (connection: SocketStream, req: FastifyRequest) => {
       // on first connect
       let clientId: string = randomWords();
-      // console.log("SERVER: client connected - " + clientId);
+      // TODO right now only the first connected client gets all the info, each consecutive
+      // connecting client needs to recieve data on all previously connected clients/players
       serverLog(" client connected - " + clientId);
       messageBuilder(server, "SERVER:clientConnected:" + clientId);
       if (game === null) {
@@ -96,21 +97,22 @@ server.register(async function (server) {
         clientLog(clientId, message);
         let messageData = message.split(":");
         // if (!game?.players.includes(messageData[0])) {
+        // TODO check if the command is coming from a player (if it's not something else has fucked)
         // }
         switch (messageData[1]) {
-          case "changeState": // TODO this is handled in the Game class; not here
-            // TODO check that all players are ready to move to next phase
-            // game.changeState(messageData[1]);
-            // connection.socket.send(
-            //   "turn: " + game.currentTurn + "\nphase: " +
-            //     game.state,
-            // );
+          case "startGame":
             break;
-          // case "nextTurn": NOTE this is gonna get taken care of in Game.changeState()
-          //   // TODO check that all players have ended their turns
-          //   currentGame.currentTurn++;
-          //   connection.socket.send("startTurn: " + currentGame.currentTurn);
-          //   break;
+          case "changeState":
+            game!.changeTurnState(
+              messageData[2] as
+                | "event"
+                | "calculate"
+                | "shop"
+                | "move"
+                | "declareStance"
+                | "resolve",
+            );
+            break;
           default:
             break;
         }
