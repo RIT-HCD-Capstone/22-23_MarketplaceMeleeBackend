@@ -4,76 +4,13 @@ import Fastify, {
   RouteShorthandOptions,
 } from "fastify";
 import { SocketStream, WebsocketHandler } from "@fastify/websocket";
+import Game from "./lib/Game";
 var randomWords = require("random-words");
 
-type GameState = "setup" | "move" | "declareStance" | "resolve" | "event";
-type PlayerStance = "Attack" | "Defend" | "Act";
-
-// Modifiers
-const MONOPOLIZE_BONUS: number = 5; // multiplicative
-
-interface Item {
-  name: string;
-  description: string;
-  consumable: boolean;
-  numUses: number;
-  price: number;
-}
-
-interface Player {
-  // id: number,
-  id: string;
-  // socket: WebSocket;
-  // state: GameState,
-  // stance: PlayerStance,
-  value: number;
-  items: Item[];
-}
-
-class Game {
-  id: string = "testid";
-  players: Player[] = [];
-  state: GameState = "setup";
-  currentTurn: number = 0;
-
-  newPlayer(id: string): void {
-    let player: Player = {
-      id: id,
-      value: 100,
-      items: [],
-    };
-    this.players.push(player);
-  }
-
-  calcTurnOrder(): void {
-    this.players.sort((n1, n2) => n1.value - n2.value);
-  }
-
-  changeState(data: string): void {
-    // TODO check if ALL players are ready to transition to next state
-    // TODO change to next state
-    // TODO increment turn
-    // TODO trigger effects
-    switch (data) {
-      case "setup":
-        currentGame.state = "move";
-
-        break;
-      case "move":
-        currentGame.state = "declareStance";
-        break;
-      default:
-        break;
-    }
-  }
-}
-
 // gamedata
-
-let currentGame: Game;
+let game: Game | null = null;
 
 // webserver
-
 const server: FastifyInstance = Fastify({
   logger: {
     transport: {
@@ -108,14 +45,32 @@ server.register(require("@fastify/websocket"), {
   options: { clientTracking: true },
 });
 
+// used for sending messages to every connected client
 const messageBuilder = (
   server: FastifyInstance,
   message: string,
 ): void => {
-  // send to all connected clients instead of echoing
   server.websocketServer.clients.forEach((client) => {
     client.send(message);
   });
+};
+
+const serverLog = (message: string): void => {
+  console.log("SERVER:" + message);
+};
+
+const clientLog = (clientId: string, message: string): void => {
+  console.log("CLIENT:" + clientId + ":" + message);
+};
+
+const addPlayer = (server: FastifyInstance, playerId: string): boolean => { // TODO should be a bool or something for error handling, just getting it done rn
+  if (typeof game == null) {
+    return false;
+  }
+  game!.newPlayer(playerId);
+  messageBuilder(server, "SERVER:newPlayer:" + playerId);
+  serverLog(" new player added to game: " + playerId);
+  return true;
 };
 
 server.register(async function (server) {
@@ -123,53 +78,33 @@ server.register(async function (server) {
     "/socket",
     { websocket: true },
     (connection: SocketStream, req: FastifyRequest) => {
-      let newClientId: string = randomWords();
-      console.log("client connected: " + newClientId);
-      // console.log(server.websocketServer.clients.entries());
-      // server.websocketServer.clients.
-
-      messageBuilder(server, "SERVER:clientConnected:" + newClientId);
+      // on first connect
+      let clientId: string = randomWords();
+      // console.log("SERVER: client connected - " + clientId);
+      serverLog(" client connected - " + clientId);
+      messageBuilder(server, "SERVER:clientConnected:" + clientId);
+      if (game === null) {
+        game = new Game();
+        console.log("SERVER:" + " " + clientId + " created a new game!");
+        messageBuilder(server, "SERVER:" + clientId + ":gameCreated");
+      }
+      // on connect, add as a player
+      addPlayer(server, clientId);
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
-        console.log("recieved: " + message);
+        clientLog(clientId, message);
         let messageData = message.split(":");
+        // if (!game?.players.includes(messageData[0])) {
+        // }
         switch (messageData[1]) {
-          case "newGame":
-            currentGame = new Game();
-            console.log(messageData[0] + " started a new game!");
-            connection.socket.send(messageData[0] + "gameStarted");
-            break;
-          case "newPlayer":
-            if (!(typeof currentGame === undefined)) { // TODO this check does not work
-              console.log("Game not started yet!");
-              // connection.socket.send("SERVER:error:noGameExists");
-              messageBuilder(server, "SERVER:error:noGameExists");
-              break;
-            }
-            currentGame.newPlayer(messageData[1]);
-            console.log("new player added!");
-            // console.log("SERVER:players:new:" + messageData[0]);
-            messageBuilder(server, "SERVER:players:new");
-            for (const player in currentGame.players) {
-              if (
-                Object.prototype.hasOwnProperty.call(
-                  currentGame.players,
-                  player,
-                )
-              ) {
-                const element = currentGame.players[player];
-                console.log(element);
-              }
-            }
-            break;
-          case "changeState":
+          case "changeState": // TODO this is handled in the Game class; not here
             // TODO check that all players are ready to move to next phase
-            currentGame.changeState(messageData[1]);
-            connection.socket.send(
-              "turn: " + currentGame.currentTurn + "\nphase: " +
-                currentGame.state,
-            );
+            // game.changeState(messageData[1]);
+            // connection.socket.send(
+            //   "turn: " + game.currentTurn + "\nphase: " +
+            //     game.state,
+            // );
             break;
           // case "nextTurn": NOTE this is gonna get taken care of in Game.changeState()
           //   // TODO check that all players have ended their turns
@@ -182,7 +117,7 @@ server.register(async function (server) {
         // connection.socket.send('hi from server')
       });
       connection.socket.on("close", () => {
-        messageBuilder(server, "SERVER:" + newClientId + ":disconnected");
+        messageBuilder(server, "SERVER:" + clientId + ":disconnected");
         // console.log("client" + newClientId + " disconnected.");
       });
     },
