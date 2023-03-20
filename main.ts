@@ -84,6 +84,7 @@ server.register(async function (server) {
       // connecting client needs to recieve data on all previously connected clients/players
       serverLog(" client connected - " + clientId);
       messageBuilder(server, "SERVER:clientConnected:" + clientId);
+      // TODO this overwrites each client's original id, probably a client side fix
       if (game === null) {
         game = new Game();
         console.log("SERVER:" + " " + clientId + " created a new game!");
@@ -98,6 +99,7 @@ server.register(async function (server) {
         let messageData = message.split(":");
         // if (!game?.players.includes(messageData[0])) {
         // TODO check if the command is coming from a player (if it's not something else has fucked)
+        // TODO check which player sent the command
         // }
         switch (messageData[1]) {
           case "startGame":
@@ -116,11 +118,9 @@ server.register(async function (server) {
           default:
             break;
         }
-        // connection.socket.send('hi from server')
       });
       connection.socket.on("close", () => {
         messageBuilder(server, "SERVER:" + clientId + ":disconnected");
-        // console.log("client" + newClientId + " disconnected.");
       });
     },
   );

@@ -3,12 +3,12 @@ import Player from "./Player";
 // Enums
 type GameState = "setup" | "play";
 type TurnState =
-  | "event"
-  | "calculate"
-  | "shop"
-  | "move"
-  | "declareStance"
-  | "resolve";
+  | "event" // each turn's event. (assuming they ever actually get written lol)
+  | "calculate" // check for completed bounties, completed objectives, pick new ones, update turn order
+  | "shop" // the shop is open. purchase items and add them to players.
+  | "move" // players are moving. wait for every player to indicate that they are done.
+  | "declareStance" // players declare their stance: 'Act', 'Defend', or 'Act'.
+  | "resolve"; // essentially a second "calculate", informs a player if they have died and removes them from the game
 // type DecayValues = 0 | 5 | 15 | 40 | 65 | 105 | 170 | 275;
 
 // Modifiers & permanants
