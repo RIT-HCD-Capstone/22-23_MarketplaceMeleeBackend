@@ -122,6 +122,9 @@ server.register(async function (server) {
               | "resolve",
             );
             break;
+          case 'resetGame':
+            game = new Game()
+            break
           default:
             break;
         }
