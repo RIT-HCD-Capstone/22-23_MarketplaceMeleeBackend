@@ -1,10 +1,12 @@
 import Player from "./Player";
 
 // Enums
+/** Tracks if the game is setting up or in play. */
 type GameState = "setup" | "play";
+/** Tracks the progression of each turn. */
 type TurnState =
   | "event" // each turn's event. (assuming they ever actually get written lol)
-  | "calculate" // check for completed bounties, completed objectives, pick new ones, update turn order
+  | "calculate" // completed objectives, pick new ones, update turn order
   | "shop" // the shop is open. purchase items and add them to players.
   | "move" // players are moving. wait for every player to indicate that they are done.
   | "declareStance" // players declare their stance: 'Act', 'Defend', or 'Act'.
@@ -16,9 +18,9 @@ const MONOPOLIZE_BONUS: number = 5; // multiplicative
 const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275];
 
 export default class Game {
-  id: string = "testid";
   players: Player[] = [];
   gameState: GameState = "setup";
+  shopEnabled: boolean = false;
   turn: number = 0;
   turnState: TurnState = "event";
 
@@ -43,25 +45,22 @@ export default class Game {
     if (this.gameState === "play") return false;
     let currentTurn: number = this.turn;
     if (currentTurn === 1) {
-      // bounties start here
-    }
-    if (currentTurn === 2) {
-      // shop starts here
+      this.shopEnabled = true
     }
     return true;
   }
 
   checkPlayerReadyState(): boolean {
-    function eachPlayer(element: Player): boolean {
-      if (element.readyState) return true;
+    function eachPlayer(player: Player): boolean {
+      if (player.readyState) return true;
       return false;
     }
     return this.players.every(eachPlayer);
   }
 
   applyPlayerDecay(): void {
-    const decay = (element: Player): void => {
-      element.value = element.value - DECAY_VALUES[this.turn];
+    const decay = (player: Player): void => {
+      player.value = player.value - DECAY_VALUES[this.turn];
     };
     this.players.every(decay);
   }
@@ -85,6 +84,7 @@ export default class Game {
     switch (state) {
       case "event":
         this.turnState = "event";
+        // TODO trigger event
         return true;
       case "calculate":
         if (!this.checkPlayerReadyState()) return false;
@@ -92,6 +92,7 @@ export default class Game {
         this.calcTurnOrder();
         return true;
       case "shop":
+        if (!this.shopEnabled) this.changeTurnState('move')
         this.turnState = "shop";
         return true;
       case "move":

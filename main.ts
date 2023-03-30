@@ -45,7 +45,7 @@ server.register(require("@fastify/websocket"), {
   options: { clientTracking: true },
 });
 
-// used for sending messages to every connected client
+/** used for sending messages to every connected client */
 const messageBuilder = (
   server: FastifyInstance,
   message: string,
@@ -55,15 +55,18 @@ const messageBuilder = (
   });
 };
 
+/** log a server message serverside */
 const serverLog = (message: string): void => {
   console.log("SERVER:" + message);
 };
 
+/** log a client message clientside */
 const clientLog = (clientId: string, message: string): void => {
   console.log("CLIENT:" + clientId + ":" + message);
 };
 
-const addPlayer = (server: FastifyInstance, playerId: string): boolean => { // TODO should be a bool or something for error handling, just getting it done rn
+/** tries to add a new player to the game */
+const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
   if (typeof game == null) {
     return false;
   }
@@ -107,12 +110,12 @@ server.register(async function (server) {
           case "changeState":
             game!.changeTurnState(
               messageData[2] as
-                | "event"
-                | "calculate"
-                | "shop"
-                | "move"
-                | "declareStance"
-                | "resolve",
+              | "event"
+              | "calculate"
+              | "shop"
+              | "move"
+              | "declareStance"
+              | "resolve",
             );
             break;
           default:
