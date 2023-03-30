@@ -86,8 +86,10 @@ server.register(async function (server) {
       // TODO right now only the first connected client gets all the info, each consecutive
       // connecting client needs to recieve data on all previously connected clients/players
       serverLog(" client connected - " + clientId);
-      messageBuilder(server, "SERVER:clientConnected:" + clientId);
       // TODO this overwrites each client's original id, probably a client side fix
+      messageBuilder(server, "SERVER:clientConnected:" + clientId);
+
+      // TODO this check does not work
       if (game === null) {
         game = new Game();
         console.log("SERVER:" + " " + clientId + " created a new game!");
@@ -95,6 +97,8 @@ server.register(async function (server) {
       }
       // on connect, add as a player
       addPlayer(server, clientId);
+
+      messageBuilder(server, 'SERVER:allPlayers:' + game.players)
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
