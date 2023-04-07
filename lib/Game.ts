@@ -26,15 +26,17 @@ export default class Game {
 
   newPlayer(id: string): boolean {
     if (this.gameState === "play") return false;
-    let player: Player = {
-      id: id,
-      value: 100,
-      items: [],
-      stance: null,
-      readyState: false,
-    };
+    let player: Player = new Player()
     this.players.push(player);
     return true;
+  }
+
+  /** Tries to find a Player with specified Id. Returns false if the player is not found. */
+  getPlayerById(id: string): Player | boolean {
+    this.players.forEach(player => {
+      if (player.id === id) { return player }
+    })
+    return false
   }
 
   calcTurnOrder(): void {
@@ -42,9 +44,8 @@ export default class Game {
   }
 
   nextTurn(): boolean {
-    if (this.gameState === "play") return false;
-    let currentTurn: number = this.turn;
-    if (currentTurn === 1) {
+    if (!(this.gameState === "play")) return false;
+    if (this.turn === 1) {
       this.shopEnabled = true
     }
     return true;

@@ -5,6 +5,8 @@ import Fastify, {
 } from "fastify";
 import { SocketStream, WebsocketHandler } from "@fastify/websocket";
 import Game from "./lib/Game";
+import Player, { PlayerStance } from "./lib/Player";
+import Item from "./lib/Item";
 var randomWords = require("random-words");
 
 // gamedata
@@ -60,7 +62,7 @@ const serverLog = (message: string): void => {
   console.log("SERVER:" + message);
 };
 
-/** log a client message clientside */
+/** log a client message serverside */
 const clientLog = (clientId: string, message: string): void => {
   console.log("CLIENT:" + clientId + ":" + message);
 };
@@ -71,10 +73,15 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
     return false;
   }
   game!.newPlayer(playerId);
-  messageBuilder(server, "SERVER:newPlayer:" + playerId);
+  messageBuilder(server, "SERVER:newPlayer:" + game?.getPlayerById(playerId));
   serverLog(" new player added to game: " + playerId);
   return true;
 };
+
+/** takes all players, matches based on clientId, and a third arguement of value increase or decrease, PlayerStance, Item to be added, or ReadyState */
+const matchPlayerToId = (allPlayers: Player[], clientId: string, thirdArg: number | PlayerStance | Item | boolean) => {
+  // TODO make thirdArg an object with all current args combined, easier to work with
+}
 
 server.register(async function (server) {
   server.get(
@@ -109,22 +116,27 @@ server.register(async function (server) {
         // TODO check which player sent the command
         // }
         switch (messageData[1]) {
+          /** triggerd when a client manually starts the game. Enables following options. */
           case "startGame":
-            break;
-          case "changeState":
-            game!.changeTurnState(
-              messageData[2] as
-              | "event"
-              | "calculate"
-              | "shop"
-              | "move"
-              | "declareStance"
-              | "resolve",
-            );
+            game?.changeGameState('play')
             break;
           case 'resetGame':
             game = new Game()
             break
+          case "shop":
+            let itemName = messageData[2]
+            // TODO implement buying items based on name
+            // TODO error handling for players not having enough value
+            break
+          /** sent when a player is done moving, triggers attempt to change to declareStance */
+          case "move":
+            game?.changeTurnState('declareStance')
+            break;
+          /** sent when a player has declaredStance, triggers attempt to change to resolve */
+          case "declareStance":
+            game?.changeTurnState('resolve')
+            // 
+            break;
           default:
             break;
         }
