@@ -73,7 +73,7 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
     return false;
   }
   game!.newPlayer(playerId);
-  messageBuilder(server, "SERVER:newPlayer:" + game?.getPlayerById(playerId));
+  messageBuilder(server, "SERVER:newPlayer:" + JSON.stringify(game?.getPlayerById(playerId)));
   serverLog(" new player added to game: " + playerId);
   return true;
 };
@@ -105,7 +105,7 @@ server.register(async function (server) {
       // on connect, add as a player
       addPlayer(server, clientId);
 
-      messageBuilder(server, 'SERVER:allPlayers:' + game.players.toString())
+      messageBuilder(server, 'SERVER:allPlayers:' + JSON.stringify(game.players))
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
