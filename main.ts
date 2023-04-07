@@ -105,7 +105,7 @@ server.register(async function (server) {
       // on connect, add as a player
       addPlayer(server, clientId);
 
-      messageBuilder(server, 'SERVER:allPlayers:' + game.players)
+      messageBuilder(server, 'SERVER:allPlayers:' + game.players.toString())
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
