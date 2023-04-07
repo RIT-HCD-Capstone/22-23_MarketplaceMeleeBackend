@@ -27,6 +27,7 @@ export default class Game {
   newPlayer(id: string): boolean {
     if (this.gameState === "play") return false;
     let player: Player = new Player()
+    player.name(id)
     this.players.push(player);
     return true;
   }
