@@ -38,8 +38,8 @@ export default class Game {
     let playerFound: Player = new Player;
     let foundPlayer: boolean = false;
     this.players.forEach(player => {
-      console.log('player id: ' + player.id)
-      console.log('passed id: ' + id)
+      // console.log('player id: ' + player.id)
+      // console.log('passed id: ' + id)
       if (player.id === id) {
         playerFound = player
         foundPlayer = true
@@ -90,8 +90,6 @@ export default class Game {
 
   changeTurnState(state: TurnState): boolean {
     if (!this.checkPlayerReadyState()) return false;
-    // TODO increment turn
-    // TODO trigger effects
     switch (state) {
       case "event":
         this.turnState = "event";

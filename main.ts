@@ -85,10 +85,7 @@ server.register(async function (server) {
     (connection: SocketStream, req: FastifyRequest) => {
       // on first connect
       let clientId: string = randomWords();
-      // TODO right now only the first connected client gets all the info, each consecutive
-      // connecting client needs to recieve data on all previously connected clients/players
       serverLog(" client connected - " + clientId);
-      // TODO this overwrites each client's original id, probably a client side fix
       messageBuilder(server, "SERVER$$clientConnected$$" + clientId);
 
       // TODO this check does not work
@@ -103,25 +100,26 @@ server.register(async function (server) {
       messageBuilder(server, 'SERVER$$allPlayers$$' + JSON.stringify(game.players))
 
       connection.socket.on("message", (data) => {
-        let message = data.toString();
+        let message = JSON.parse(data.toString());
         clientLog(clientId, message);
-        let messageData = message.split(":");
-        // if (!game?.players.includes(messageData[0])) {
-        // TODO check if the command is coming from a player (if it's not something else has fucked)
-        // TODO check which player sent the command
-        // }
-        switch (messageData[1]) {
+        let messageData = message.split("$$");
+        let client: string = messageData[1]
+        let player = game!.getPlayerById(clientId);
+        // if (player instanceof Player) { }
+        let command: string = messageData[2]
+        let extra: string = messageData[3]
+        switch (command) {
           /** triggerd when a client manually starts the game. Enables following options. */
           case "startGame":
             game?.changeGameState('play')
             break;
+          /** when you just gotta wipe it out start over */
           case 'resetGame':
             game = new Game()
             break
+          /** sent from the shop screen with the name of the intended purchase */
           case "shop":
-            let itemName = messageData[2]
-            // TODO implement buying items based on name
-            // TODO error handling for players not having enough value
+            if (player instanceof Player) { return player.buyItem(extra) }
             break
           /** sent when a player is done moving, triggers attempt to change to declareStance */
           case "move":
@@ -130,12 +128,13 @@ server.register(async function (server) {
           /** sent when a player has declaredStance, triggers attempt to change to resolve */
           case "declareStance":
             game?.changeTurnState('resolve')
-            // 
             break;
           default:
             break;
         }
       });
+
+      /** When the socket closes, kill the player created by that Client. */
       connection.socket.on("close", () => {
         let thisPlayer = game!.getPlayerById(clientId)
         if (thisPlayer instanceof Player) {
