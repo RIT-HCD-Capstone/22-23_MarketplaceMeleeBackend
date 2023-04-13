@@ -58,9 +58,13 @@ export default class Player {
   }
 
   /** Prevent players from buying down to or below 0 value. */
-  buyItem(item: Item): boolean {
-    if (item.price >= this.value) { return false }
-    this.items.push(item)
+  buyItem(item: string): boolean {
+    let wantItem: Item
+    this.items.forEach(_item => {
+      if (_item.name === item) { wantItem = _item }
+    });
+    if (wantItem!.price >= this.value) { return false }
+    this.items.push(wantItem!)
     return true
   }
 
