@@ -100,7 +100,7 @@ server.register(async function (server) {
       messageBuilder(server, 'SERVER$$allPlayers$$' + JSON.stringify(game.players))
 
       connection.socket.on("message", (data) => {
-        let message = JSON.parse(data.toString());
+        let message = data.toString()
         clientLog(clientId, message);
         let messageData = message.split("$$");
         let client: string = messageData[1]
