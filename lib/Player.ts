@@ -97,4 +97,29 @@ export default class Player {
   die(): void {
     this.playerAlive = false;
   }
+
+  export(): ClientPlayerData {
+    return {
+      id: this.id,
+      stance: this.stance,
+      statAttack: this.statAttack(),
+      statDefend: this.statDefend(),
+      value: this.value,
+      items: this.items,
+      readyState: this.readyState,
+      playerAlive: this.playerAlive,
+    }
+  }
+}
+
+/** Sends the current state of each player to the Client. */
+export interface ClientPlayerData {
+  id: string;
+  stance: PlayerStance;
+  statAttack: number;
+  statDefend: number;
+  value: number;
+  items: Item[];
+  readyState: boolean;
+  playerAlive: boolean;
 }

@@ -5,8 +5,11 @@ export default interface Item {
   consumable: boolean;
   numUses?: number;
   price: number;
+  rarity: Rarity;
   effect: Effect;
 }
+
+export type Rarity = 'Common' | 'Uncommon' | 'Rare' | 'Legendary'
 
 /** The stat that the item effects */
 export type AffectedStats = 'Attack' | 'Defend' | 'Range'

@@ -72,9 +72,12 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
     return false;
   }
   game!.newPlayer(playerId);
+  let thisPlayer = game?.getPlayerById(playerId)
+  let playerToSend
+  if (thisPlayer instanceof Player) playerToSend = thisPlayer.export();
   messageBuilder(
     server,
-    "SERVER$$newPlayer$$" + JSON.stringify(game?.getPlayerById(playerId)),
+    "SERVER$$newPlayer$$" + JSON.stringify(playerToSend),
   );
   serverLog(" new player added to game: " + playerId);
   return true;
@@ -90,13 +93,12 @@ server.register(async function (server) {
       serverLog(" client connected - " + clientId);
       messageBuilder(server, "SERVER$$clientConnected$$" + clientId);
 
-      // TODO this check does not work
       if (game === null) {
         game = new Game();
         console.log("SERVER:" + " " + clientId + " created a new game!");
         messageBuilder(server, "SERVER$$" + clientId + "$$gameCreated");
       }
-      // on connect, add as a player
+
       addPlayer(server, clientId);
 
       messageBuilder(
@@ -141,8 +143,6 @@ server.register(async function (server) {
               game?.playerStanceResolve(player);
             }
             game?.changeTurnState("resolve");
-            break;
-          default:
             break;
         }
       });

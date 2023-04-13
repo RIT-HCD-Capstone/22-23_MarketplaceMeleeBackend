@@ -1,6 +1,5 @@
 import Player from "./Player";
 
-// Enums
 /** Tracks if the game is setting up or in play. */
 type GameState = "setup" | "play";
 /** Tracks the progression of each turn. */
@@ -11,10 +10,8 @@ type TurnState =
   | "move" // players are moving. wait for every player to indicate that they are done.
   | "declareStance" // players declare their stance: 'Act', 'Defend', or 'Act'.
   | "resolve"; // essentially a second "calculate", informs a player if they have died and removes them from the game
-// type DecayValues = 0 | 5 | 15 | 40 | 65 | 105 | 170 | 275;
 
-// Modifiers & permanants
-const MONOPOLIZE_BONUS: number = 5; // multiplicative
+/** Amount of Value every player will lose per turn, up to 8 turns (at least for now). */
 const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275];
 
 export default class Game {

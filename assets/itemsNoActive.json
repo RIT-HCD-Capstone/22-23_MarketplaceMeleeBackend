@@ -1,142 +1,97 @@
-
 [{
-    "name": "Spear",
-    "description": "Double attack range",
-    "rarity": "Legendary",
-    "price": 30,
-    "type": "Permanant Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Pointy Stick",
-    "description": "Increase attack damage by 30",
-    "rarity": "Rare",
-    "price": 40,
-    "type": "Permanent Passive",
-    "num_uses": 1,
-    "effect": {
-        "stat": "Attack",
-        "type": "additive",
-        "amount": 30
-    }
-},
-
-{
-    "name": "Non copyright infringing blue hedgehog shoes",
-    "description": "Increase your movement range by half the starting range",
-    "rarity": "Rare",
-    "price": 40,
-    "type": "Permanent Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Triggered Passive",
-    "description": "When attacked, change that player's stance to sell",
-    "rarity": "Rare",
-    "price": 15,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Protective Mirror",
-    "description": "When attacked, change that player's stance to Save",
-    "rarity": "Rare",
-    "price": 15,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Bucket of Teeth",
-    "description": "You now have more teeth. Do 2 extra damage per attack",
-    "rarity": "Uncommon",
-    "price": 5,
-    "type": "Triggered Passive",
-    "num_uses": 5
-},
-
-{
-    "name": "'Axe' Body Spray",
-    "description": "Nobody can move within attack range of you next turn",
-    "rarity": "Rare",
-    "price": 15,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Bucket of Rocks",
-    "description": "You now have a bucket of rocks. Do 5 extra damage per attack, can attack from your move range",
-    "rarity": "Rare",
-    "price": 15,
-    "type": "Triggered Passive",
-    "num_uses": 5
-},
-
-{
-    "name": "Bond",
-    "description": "Gain 80 in two turns",
-    "rarity": "Uncommon",
-    "price": 20,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Sacrificial Dagger",
-    "description": "Your next attack grants quadruple the value of the damage dealt",
-    "rarity": "Legendary",
-    "price": 50,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Gilded Shield",
-    "description": "Block 3 times, gain 80",
-    "rarity": "Uncommon",
-    "price": 20,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Bucket of Dragon Teeth",
-    "description": "You now have Spyro's teeth. Do 45 extra damage per attack",
-    "rarity": "Legendary",
-    "price": 50,
-    "type": "Triggered Passive",
-    "num_uses": 3
-},
-
-{
-    "name": "Survey Contract",
-    "description": "Sell at 3 different Marketplaces, gain double the value you gained from selling at them",
-    "rarity": "Uncommon",
-    "price": 15,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Tree Branch",
-    "description": "Do 10 extra damage on your next attack",
-    "rarity": "Common",
-    "price": 10,
-    "type": "Triggered Passive",
-    "num_uses": 1
-},
-
-{
-    "name": "Armor",
-    "description": "Save 10 more value on your next save",
-    "rarity": "Common",
-    "price": 10,
-    "type": "Triggered Passive",
-    "num_uses": 1
+  "name": "Pointy Stick",
+  "description": "Increase attack damage by 30",
+  "rarity": "Rare",
+  "price": 40,
+  "type": "Permanent Passive",
+  "num_uses": 1,
+  "effect": {
+    "stat": "Attack",
+    "type": "additive",
+    "amount": 30
+  }
+}, {
+  "name": "Triggered Passive",
+  "description": "When attacked, change that player's stance to sell",
+  "rarity": "Rare",
+  "price": 15,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Protective Mirror",
+  "description": "When attacked, change that player's stance to Save",
+  "rarity": "Rare",
+  "price": 15,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Bucket of Teeth",
+  "description": "You now have more teeth. Do 2 extra damage per attack",
+  "rarity": "Uncommon",
+  "price": 5,
+  "type": "Triggered Passive",
+  "num_uses": 5
+}, {
+  "name": "'Axe' Body Spray",
+  "description": "Nobody can move within attack range of you next turn",
+  "rarity": "Rare",
+  "price": 15,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Bucket of Rocks",
+  "description": "You now have a bucket of rocks. Do 5 extra damage per attack, can attack from your move range",
+  "rarity": "Rare",
+  "price": 15,
+  "type": "Triggered Passive",
+  "num_uses": 5
+}, {
+  "name": "Bond",
+  "description": "Gain 80 in two turns",
+  "rarity": "Uncommon",
+  "price": 20,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Sacrificial Dagger",
+  "description": "Your next attack grants quadruple the value of the damage dealt",
+  "rarity": "Legendary",
+  "price": 50,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Gilded Shield",
+  "description": "Block 3 times, gain 80",
+  "rarity": "Uncommon",
+  "price": 20,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Bucket of Dragon Teeth",
+  "description": "You now have Spyro's teeth. Do 45 extra damage per attack",
+  "rarity": "Legendary",
+  "price": 50,
+  "type": "Triggered Passive",
+  "num_uses": 3
+}, {
+  "name": "Survey Contract",
+  "description": "Sell at 3 different Marketplaces, gain double the value you gained from selling at them",
+  "rarity": "Uncommon",
+  "price": 15,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Tree Branch",
+  "description": "Do 10 extra damage on your next attack",
+  "rarity": "Common",
+  "price": 10,
+  "type": "Triggered Passive",
+  "num_uses": 1
+}, {
+  "name": "Armor",
+  "description": "Save 10 more value on your next save",
+  "rarity": "Common",
+  "price": 10,
+  "type": "Triggered Passive",
+  "num_uses": 1
 }]
-
-
