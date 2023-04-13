@@ -2,7 +2,7 @@ export default interface Item {
   name: string;
   description: string;
   consumable: boolean;
-  numUses: number;
+  numUses?: number;
   price: number;
   effect: Effect;
 }

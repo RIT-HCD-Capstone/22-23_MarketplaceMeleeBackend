@@ -24,6 +24,7 @@ export default class Game {
   turn: number = 0;
   turnState: TurnState = "event";
 
+  /** Creates a new Player, then adds it to the Game Player's array. */
   newPlayer(id: string): boolean {
     if (this.gameState === "play") return false;
     let player: Player = new Player()
@@ -34,9 +35,17 @@ export default class Game {
 
   /** Tries to find a Player with specified Id. Returns false if the player is not found. */
   getPlayerById(id: string): Player | boolean {
+    let playerFound: Player = new Player;
+    let foundPlayer: boolean = false;
     this.players.forEach(player => {
-      if (player.id === id) { return player }
+      console.log('player id: ' + player.id)
+      console.log('passed id: ' + id)
+      if (player.id === id) {
+        playerFound = player
+        foundPlayer = true
+      }
     })
+    if (foundPlayer) { return playerFound }
     return false
   }
 

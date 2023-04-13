@@ -14,7 +14,12 @@
     "rarity": "Rare",
     "price": 40,
     "type": "Permanent Passive",
-    "num_uses": 1
+    "num_uses": 1,
+    "Effect": {
+        "stat": "Attack",
+        "type": "additive",
+        "amount": 40
+    }
 },
 
 {
