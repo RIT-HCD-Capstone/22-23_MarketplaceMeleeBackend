@@ -1,3 +1,4 @@
+/** Items that can be purchased from the shop. Modifies the player's stats in different ways. */
 export default interface Item {
   name: string;
   description: string;
@@ -7,9 +8,12 @@ export default interface Item {
   effect: Effect;
 }
 
+/** The stat that the item effects */
 export type AffectedStats = 'Attack' | 'Defend' | 'Range'
+/** the type of effect */
 export type EffectType = 'additive' | 'multiplicative'
 
+/** The effected stat, type, and volume of the change */
 export interface Effect {
   stat: AffectedStats
   type: EffectType
