@@ -4,11 +4,11 @@ import Item from "./Item";
 export type PlayerStance = "Attack" | "Defend" | "Act" | null;
 
 /**
- * The Player class handles the any actions a player can make, 
+ * The Player class handles the any actions a player can make,
  * as well as tracking their relevant values and stats.
  */
 export default class Player {
-  id: string = '';
+  id: string = "";
   stance: PlayerStance = null;
   baseStatAttack: number = 10;
   baseStatDefend: number = 10;
@@ -18,59 +18,83 @@ export default class Player {
   playerAlive: boolean = true;
 
   /** assign the player an ID / name */
-  name(name: string) { this.id = name }
-
-  /** Attack another player, reducing damage done to their value by their Defense stat, and increasing their own value by the amount dealt. */
-  attack(target: Player): Player {
-    let damageDealt = this.statAttack() - target.statDefend()
-    if (damageDealt <= 0) { return target }
-    target.value = target.value - damageDealt
-    this.value = this.value + damageDealt
-    return target
+  name(name: string) {
+    this.id = name;
   }
 
-  /** nyi */
-  act(): boolean { return false }
+  /** Attack another player, with different modifiers based on target stance,
+   *  and increasing their own value by the amount dealt. */
+  attack(target: Player): Player {
+    let damageDealt: number;
+    /** no damage modifiers */
+    if (target.stance == 'Attack') {
+      damageDealt = this.statAttack()
+    }
+    /** damage is decreased by target's Defense stat */
+    if (target.stance == 'Defend') {
+      damageDealt = this.statAttack() - target.statDefend();
+    }
+    /** damage is doubled against Acting players */
+    if (target.stance == 'Act') {
+      damageDealt = this.statAttack() * 2
+    }
+
+    /** if dealing no damage, deal no damage. */
+    if (damageDealt! <= 0) return target;
+    target.value = target.value - damageDealt!;
+    this.value = this.value + damageDealt!;
+    return target;
+  }
+
+  /** gain 50 value */
+  act(): void {
+    this.value += 50;
+  }
 
   /** Calculate the current Attack stat, inclusive of item modifiers. */
   statAttack(): number {
-    let attackModifier: number = 0
-    this.items.forEach(item => {
-      if (item.effect.stat !== "Attack") {/* do nothing */ }
-      attackModifier = attackModifier + item.effect.amount
+    let attackModifier: number = 0;
+    this.items.forEach((item) => {
+      if (item.effect.stat !== "Attack") { /* do nothing */ }
+      attackModifier = attackModifier + item.effect.amount;
     });
-    return this.baseStatAttack + attackModifier
+    return this.baseStatAttack + attackModifier;
   }
 
   /** Calculate the current Defend stat, inclusive of item modifiers. */
   statDefend(): number {
-    let defendModifier: number = 0
-    this.items.forEach(item => {
-      if (item.effect.stat !== "Defend") {/* do nothing */ }
-      defendModifier = defendModifier + item.effect.amount
+    let defendModifier: number = 0;
+    this.items.forEach((item) => {
+      if (item.effect.stat !== "Defend") { /* do nothing */ }
+      defendModifier = defendModifier + item.effect.amount;
     });
-    return this.baseStatDefend + defendModifier
+    return this.baseStatDefend + defendModifier;
   }
 
   /** declare stance */
   declareStance(stance: PlayerStance) {
-    this.stance = stance
+    this.stance = stance;
   }
 
   /** Prevent players from buying down to or below 0 value. */
   buyItem(item: string): boolean {
-    let wantItem: Item
-    this.items.forEach(_item => {
-      if (_item.name === item) { wantItem = _item }
+    let wantItem: Item;
+    this.items.forEach((_item) => {
+      if (_item.name === item) wantItem = _item;
     });
-    if (wantItem!.price >= this.value) { return false }
-    this.items.push(wantItem!)
-    return true
+    if (wantItem!.price >= this.value) return false;
+    this.items.push(wantItem!);
+    this.value -= wantItem!.price;
+    return true;
   }
 
   /** ready up */
-  ready() { this.readyState = true }
+  ready(): void {
+    this.readyState = true;
+  }
 
   /** mods, crush his skull */
-  die() { this.playerAlive = false }
+  die(): void {
+    this.playerAlive = false;
+  }
 }

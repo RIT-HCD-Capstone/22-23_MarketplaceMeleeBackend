@@ -69,6 +69,29 @@ export default class Game {
     return this.players.every(eachPlayer);
   }
 
+  checkPlayerStanceState(): boolean {
+    function eachPlayer(player: Player): boolean {
+      if (player.stance !== null) return true;
+      return false;
+    }
+    return this.players.every(eachPlayer);
+  }
+
+  playerStanceResolve(player: Player, targetedPlayer?: Player): void {
+    let stance = player.stance
+    switch (stance) {
+      case 'Attack':
+        if (targetedPlayer instanceof Player) player.attack(targetedPlayer)
+        break;
+      case 'Defend':
+        // nothing
+        break;
+      case 'Act':
+        player.act()
+        break;
+    }
+  }
+
   applyPlayerDecay(): void {
     const decay = (player: Player): void => {
       player.value = player.value - DECAY_VALUES[this.turn];

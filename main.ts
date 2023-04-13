@@ -3,10 +3,9 @@ import Fastify, {
   FastifyRequest,
   RouteShorthandOptions,
 } from "fastify";
-import { SocketStream, WebsocketHandler } from "@fastify/websocket";
+import { SocketStream } from "@fastify/websocket";
 import Game from "./lib/Game";
 import Player, { PlayerStance } from "./lib/Player";
-import Item from "./lib/Item";
 var randomWords = require("random-words");
 
 // gamedata
@@ -73,7 +72,10 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
     return false;
   }
   game!.newPlayer(playerId);
-  messageBuilder(server, "SERVER$$newPlayer$$" + JSON.stringify(game?.getPlayerById(playerId)));
+  messageBuilder(
+    server,
+    "SERVER$$newPlayer$$" + JSON.stringify(game?.getPlayerById(playerId)),
+  );
   serverLog(" new player added to game: " + playerId);
   return true;
 };
@@ -97,37 +99,48 @@ server.register(async function (server) {
       // on connect, add as a player
       addPlayer(server, clientId);
 
-      messageBuilder(server, 'SERVER$$allPlayers$$' + JSON.stringify(game.players))
+      messageBuilder(
+        server,
+        "SERVER$$allPlayers$$" + JSON.stringify(game.players),
+      );
 
       connection.socket.on("message", (data) => {
-        let message = data.toString()
+        let message = data.toString();
         clientLog(clientId, message);
         let messageData = message.split("$$");
-        let client: string = messageData[1]
-        let player = game!.getPlayerById(clientId);
-        // if (player instanceof Player) { }
-        let command: string = messageData[2]
-        let extra: string = messageData[3]
+        let client: string = messageData[1];
+        let player = game!.getPlayerById(client);
+        let command: string = messageData[2];
+        let extra: string = messageData[3];
+        /** ONLY used when recieving CLIENT$$declareStance$$Attack$$targetedPlayer */
+        let targetedPlayer = game!.getPlayerById(messageData[4]);
         switch (command) {
-          /** triggerd when a client manually starts the game. Enables following options. */
+          /** sent when a client manually starts the game. */
           case "startGame":
-            game?.changeGameState('play')
+            game?.changeGameState("play");
             break;
           /** when you just gotta wipe it out start over */
-          case 'resetGame':
-            game = new Game()
-            break
+          case "resetGame":
+            game = new Game();
+            break;
           /** sent from the shop screen with the name of the intended purchase */
           case "shop":
-            if (player instanceof Player) { return player.buyItem(extra) }
-            break
+            if (player instanceof Player) return player.buyItem(extra);
+            break;
           /** sent when a player is done moving, triggers attempt to change to declareStance */
           case "move":
-            game?.changeTurnState('declareStance')
+            game?.changeTurnState("declareStance");
             break;
           /** sent when a player has declaredStance, triggers attempt to change to resolve */
           case "declareStance":
-            game?.changeTurnState('resolve')
+            if (player instanceof Player) {
+              if (targetedPlayer instanceof Player) {
+                game?.playerStanceResolve(player, targetedPlayer);
+                break;
+              }
+              game?.playerStanceResolve(player);
+            }
+            game?.changeTurnState("resolve");
             break;
           default:
             break;
@@ -136,9 +149,9 @@ server.register(async function (server) {
 
       /** When the socket closes, kill the player created by that Client. */
       connection.socket.on("close", () => {
-        let thisPlayer = game!.getPlayerById(clientId)
+        let thisPlayer = game!.getPlayerById(clientId);
         if (thisPlayer instanceof Player) {
-          thisPlayer.die()
+          thisPlayer.die();
         }
         messageBuilder(server, "SERVER$$" + clientId + "$$disconnected");
       });
