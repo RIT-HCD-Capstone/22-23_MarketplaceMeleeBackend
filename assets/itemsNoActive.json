@@ -15,10 +15,10 @@
     "price": 40,
     "type": "Permanent Passive",
     "num_uses": 1,
-    "Effect": {
+    "effect": {
         "stat": "Attack",
         "type": "additive",
-        "amount": 40
+        "amount": 30
     }
 },
 
