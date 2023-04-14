@@ -52,6 +52,7 @@ const messageBuilder = (
   message: string,
 ): void => {
   server.websocketServer.clients.forEach((client) => {
+    message = 'SERVER$$' + message
     client.send(message);
   });
 };
@@ -77,7 +78,7 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
   if (thisPlayer instanceof Player) playerToSend = thisPlayer.export();
   messageBuilder(
     server,
-    "SERVER$$newPlayer$$" + JSON.stringify(playerToSend),
+    "newPlayer$$" + JSON.stringify(playerToSend),
   );
   serverLog(" new player added to game: " + playerId);
   return true;
@@ -91,19 +92,19 @@ server.register(async function (server) {
       // on first connect
       let clientId: string = randomWords();
       serverLog(" client connected - " + clientId);
-      messageBuilder(server, "SERVER$$clientConnected$$" + clientId);
+      messageBuilder(server, "clientConnected$$" + clientId);
 
       if (game === null) {
         game = new Game();
         console.log("SERVER:" + " " + clientId + " created a new game!");
-        messageBuilder(server, "SERVER$$" + clientId + "$$gameCreated");
+        messageBuilder(server, clientId + "$$gameCreated");
       }
 
       addPlayer(server, clientId);
 
       messageBuilder(
         server,
-        "SERVER$$allPlayers$$" + JSON.stringify(game.players),
+        "allPlayers$$" + JSON.stringify(game.players),
       );
 
       connection.socket.on("message", (data) => {
@@ -120,6 +121,7 @@ server.register(async function (server) {
           /** sent when a client manually starts the game. */
           case "startGame":
             game?.changeGameState("play");
+            messageBuilder(server, 'gameEvent')
             break;
           /** when you just gotta wipe it out start over */
           case "resetGame":
@@ -128,6 +130,10 @@ server.register(async function (server) {
           /** sent from the shop screen with the name of the intended purchase */
           case "shop":
             if (player instanceof Player) return player.buyItem(extra);
+            break;
+          case "doneShopping":
+            game?.changeTurnState("move")
+            messageBuilder(server, "gameMove")
             break;
           /** sent when a player is done moving, triggers attempt to change to declareStance */
           case "move":
@@ -153,7 +159,7 @@ server.register(async function (server) {
         if (thisPlayer instanceof Player) {
           thisPlayer.die();
         }
-        messageBuilder(server, "SERVER$$" + clientId + "$$disconnected");
+        messageBuilder(server, clientId + "$$disconnected");
       });
     },
   );
