@@ -138,6 +138,7 @@ server.register(async function (server) {
           /** sent when a player is done moving, triggers attempt to change to declareStance */
           case "move":
             game?.changeTurnState("declareStance");
+            messageBuilder(server, 'gameStance')
             break;
           /** sent when a player has declaredStance, triggers attempt to change to resolve */
           case "declareStance":
@@ -149,6 +150,7 @@ server.register(async function (server) {
               game?.playerStanceResolve(player);
             }
             game?.changeTurnState("resolve");
+            messageBuilder(server, 'gameResolve')
             break;
         }
       });
