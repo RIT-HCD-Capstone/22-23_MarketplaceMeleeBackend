@@ -51,8 +51,8 @@ const messageBuilder = (
   server: FastifyInstance,
   message: string,
 ): void => {
+  message = "SERVER$$" + message;
   server.websocketServer.clients.forEach((client) => {
-    message = "SERVER$$" + message;
     client.send(message);
   });
 };
