@@ -52,7 +52,7 @@ const messageBuilder = (
   message: string,
 ): void => {
   server.websocketServer.clients.forEach((client) => {
-    message = 'SERVER$$' + message
+    message = "SERVER$$" + message;
     client.send(message);
   });
 };
@@ -73,8 +73,8 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
     return false;
   }
   game!.newPlayer(playerId);
-  let thisPlayer = game?.getPlayerById(playerId)
-  let playerToSend
+  let thisPlayer = game?.getPlayerById(playerId);
+  let playerToSend;
   if (thisPlayer instanceof Player) playerToSend = thisPlayer.export();
   messageBuilder(
     server,
@@ -121,7 +121,7 @@ server.register(async function (server) {
           /** sent when a client manually starts the game. */
           case "startGame":
             game?.changeGameState("play");
-            messageBuilder(server, 'gameEvent')
+            messageBuilder(server, "gameEvent");
             break;
           /** when you just gotta wipe it out start over */
           case "resetGame":
@@ -132,13 +132,14 @@ server.register(async function (server) {
             if (player instanceof Player) return player.buyItem(extra);
             break;
           case "doneShopping":
-            game?.changeTurnState("move")
-            messageBuilder(server, "gameMove")
+            game?.changeTurnState("move");
+            messageBuilder(server, "gameMove");
             break;
           /** sent when a player is done moving, triggers attempt to change to declareStance */
           case "move":
+            // TODO this does not work due to the front-end design of the declareStance overlay
             game?.changeTurnState("declareStance");
-            messageBuilder(server, 'gameStance')
+            messageBuilder(server, "gameStance");
             break;
           /** sent when a player has declaredStance, triggers attempt to change to resolve */
           case "declareStance":
@@ -150,7 +151,7 @@ server.register(async function (server) {
               game?.playerStanceResolve(player);
             }
             game?.changeTurnState("resolve");
-            messageBuilder(server, 'gameResolve')
+            messageBuilder(server, "gameResolve");
             break;
         }
       });
@@ -160,6 +161,7 @@ server.register(async function (server) {
         let thisPlayer = game!.getPlayerById(clientId);
         if (thisPlayer instanceof Player) {
           thisPlayer.die();
+          game?.applyPlayerDeathState();
         }
         messageBuilder(server, clientId + "$$disconnected");
       });

@@ -24,26 +24,26 @@ export default class Game {
   /** Creates a new Player, then adds it to the Game Player's array. */
   newPlayer(id: string): boolean {
     if (this.gameState === "play") return false;
-    let player: Player = new Player()
-    player.name(id)
+    let player: Player = new Player();
+    player.name(id);
     this.players.push(player);
     return true;
   }
 
   /** Tries to find a Player with specified Id. Returns false if the player is not found. */
   getPlayerById(id: string): Player | boolean {
-    let playerFound: Player = new Player;
+    let playerFound: Player = new Player();
     let foundPlayer: boolean = false;
-    this.players.forEach(player => {
+    this.players.forEach((player) => {
       // console.log('player id: ' + player.id)
       // console.log('passed id: ' + id)
       if (player.id === id) {
-        playerFound = player
-        foundPlayer = true
+        playerFound = player;
+        foundPlayer = true;
       }
-    })
-    if (foundPlayer) { return playerFound }
-    return false
+    });
+    if (foundPlayer) return playerFound;
+    return false;
   }
 
   calcTurnOrder(): void {
@@ -53,7 +53,7 @@ export default class Game {
   nextTurn(): boolean {
     if (!(this.gameState === "play")) return false;
     if (this.turn === 1) {
-      this.shopEnabled = true
+      this.shopEnabled = true;
     }
     return true;
   }
@@ -75,16 +75,16 @@ export default class Game {
   }
 
   playerStanceResolve(player: Player, targetedPlayer?: Player): void {
-    let stance = player.stance
+    let stance = player.stance;
     switch (stance) {
-      case 'Attack':
-        if (targetedPlayer instanceof Player) player.attack(targetedPlayer)
+      case "Attack":
+        if (targetedPlayer instanceof Player) player.attack(targetedPlayer);
         break;
-      case 'Defend':
+      case "Defend":
         // nothing
         break;
-      case 'Act':
-        player.act()
+      case "Act":
+        player.act();
         break;
     }
   }
@@ -94,6 +94,12 @@ export default class Game {
       player.value = player.value - DECAY_VALUES[this.turn];
     };
     this.players.every(decay);
+  }
+
+  applyPlayerDeathState(): void {
+    this.players.forEach((player, index) => {
+      if (player.playerAlive === false) this.players.splice(index, 1);
+    });
   }
 
   changeGameState(state: GameState): boolean {
@@ -121,7 +127,7 @@ export default class Game {
         this.calcTurnOrder();
         return true;
       case "shop":
-        if (!this.shopEnabled) this.changeTurnState('move')
+        if (!this.shopEnabled) this.changeTurnState("move");
         this.turnState = "shop";
         return true;
       case "move":
@@ -136,6 +142,7 @@ export default class Game {
         if (!this.checkPlayerReadyState()) return false;
         this.turnState = "resolve";
         this.applyPlayerDecay();
+        this.applyPlayerDeathState();
         this.turn++;
         return true;
     }
