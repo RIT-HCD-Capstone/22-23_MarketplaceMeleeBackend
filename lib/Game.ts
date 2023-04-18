@@ -52,9 +52,6 @@ export default class Game {
 
   nextTurn(): boolean {
     if (!(this.gameState === "play")) return false;
-    if (this.turn === 1) {
-      this.shopEnabled = true;
-    }
     return true;
   }
 

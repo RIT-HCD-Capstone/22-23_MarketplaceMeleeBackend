@@ -146,9 +146,11 @@ server.register(async function (server) {
               game?.changeGameState("play");
               messageBuilder(server, "gameEvent");
               sendAllPlayers(server, game!.players)
+              game?.changeTurnState('event')
               break;
             /** sent from the shop screen with the name of the intended purchase */
             case "shop":
+              game?.changeTurnState('shop')
               if (player instanceof Player) player.buyItem(extra);
               break;
             case "doneShopping":
