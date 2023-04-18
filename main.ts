@@ -5,7 +5,7 @@ import Fastify, {
 } from "fastify";
 import { SocketStream } from "@fastify/websocket";
 import Game from "./lib/Game";
-import Player, { PlayerStance } from "./lib/Player";
+import Player, { ClientPlayerData } from "./lib/Player";
 var randomWords = require("random-words");
 
 // gamedata
@@ -84,11 +84,31 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
   return true;
 };
 
+const sendAllPlayers = (server: FastifyInstance, allPlayers: Player[]): void => {
+  let sendablePlayers: ClientPlayerData[] = []
+
+  allPlayers.forEach(player => {
+    let sendable = player.export()
+    // console.log('adding playerid to sendablePlayers: ' + player.id)
+    // console.log('adding sendableid to sendablePlayers: ' + sendable.id)
+    sendablePlayers.push(sendable);
+  })
+
+  messageBuilder(
+    server,
+    "allPlayers$$" + JSON.stringify(sendablePlayers),
+  );
+}
+
+const sendDeadPlayers = (server: FastifyInstance, deadPlayers: Player[]): void => {
+  messageBuilder(server, 'playerDeath$$' + JSON.stringify(deadPlayers))
+}
+
 server.register(async function (server) {
   server.get(
     "/socket",
     { websocket: true },
-    (connection: SocketStream, req: FastifyRequest) => {
+    (connection: SocketStream, _req: FastifyRequest) => {
       // on first connect
       let clientId: string = randomWords();
       serverLog(" client connected - " + clientId);
@@ -102,57 +122,89 @@ server.register(async function (server) {
 
       addPlayer(server, clientId);
 
-      messageBuilder(
-        server,
-        "allPlayers$$" + JSON.stringify(game.players),
-      );
+      // console.log(game.players)
+      sendAllPlayers(server, game.players)
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
         clientLog(clientId, message);
         let messageData = message.split("$$");
+        let messageSource: string = messageData[0]
         let client: string = messageData[1];
         let player = game!.getPlayerById(client);
         let command: string = messageData[2];
         let extra: string = messageData[3];
         /** ONLY used when recieving CLIENT$$declareStance$$Attack$$targetedPlayer */
         let targetedPlayer = game!.getPlayerById(messageData[4]);
-        switch (command) {
-          /** sent when a client manually starts the game. */
-          case "startGame":
-            game?.changeGameState("play");
-            messageBuilder(server, "gameEvent");
-            break;
-          /** when you just gotta wipe it out start over */
-          case "resetGame":
-            game = new Game();
-            break;
-          /** sent from the shop screen with the name of the intended purchase */
-          case "shop":
-            if (player instanceof Player) return player.buyItem(extra);
-            break;
-          case "doneShopping":
-            game?.changeTurnState("move");
-            messageBuilder(server, "gameMove");
-            break;
-          /** sent when a player is done moving, triggers attempt to change to declareStance */
-          case "move":
-            // TODO this does not work due to the front-end design of the declareStance overlay
-            game?.changeTurnState("declareStance");
-            messageBuilder(server, "gameStance");
-            break;
-          /** sent when a player has declaredStance, triggers attempt to change to resolve */
-          case "declareStance":
-            if (player instanceof Player) {
-              if (targetedPlayer instanceof Player) {
-                game?.playerStanceResolve(player, targetedPlayer);
-                break;
+        if (messageSource === 'CLIENT') {
+          switch (command) {
+            case 'update':
+              game!.players = JSON.parse(extra)
+              break;
+            /** sent when a client manually starts the game. */
+            case "startGame":
+              game?.changeGameState("play");
+              messageBuilder(server, "gameEvent");
+              break;
+            /** sent from the shop screen with the name of the intended purchase */
+            case "shop":
+              if (player instanceof Player) player.buyItem(extra);
+              break;
+            case "doneShopping":
+              game?.changeTurnState("move");
+              messageBuilder(server, "gameMove");
+              break;
+            /** sent when a player is done moving, triggers attempt to change to declareStance */
+            case "move":
+              // TODO this does not work due to the front-end design of the declareStance overlay
+              game?.changeTurnState("declareStance");
+              messageBuilder(server, "gameStance");
+              break;
+            /** sent when a player has declaredStance, triggers attempt to change to resolve */
+            case "declareStance":
+              if (player instanceof Player) {
+                if (targetedPlayer instanceof Player) {
+                  game?.playerStanceResolve(player, targetedPlayer);
+                  break;
+                }
+                game?.playerStanceResolve(player);
               }
-              game?.playerStanceResolve(player);
-            }
-            game?.changeTurnState("resolve");
-            messageBuilder(server, "gameResolve");
-            break;
+              game?.changeTurnState("resolve");
+              sendAllPlayers(server, game!.players)
+              messageBuilder(server, "gameResolve");
+              break;
+          }
+        }
+        if (messageSource === 'ADMIN') {
+          switch (command) {
+            /** when you just gotta wipe it out start over */
+            case "resetGame":
+              game = new Game();
+              break;
+            /** admin command to kill specified player */
+            case 'killPlayer':
+              if (player instanceof Player) player.die();
+              sendDeadPlayers(server, game!.applyPlayerDeathState());
+              sendAllPlayers(server, game!.players)
+              break;
+            /** admin command to increase specified player's value by 10 */
+            case 'valueUp':
+              if (player instanceof Player) player.value += 10;
+              sendAllPlayers(server, game!.players)
+              break;
+            /** admin command to decrease specified player's value by 10 */
+            case 'valueDown':
+              if (player instanceof Player) player.value -= 10;
+              sendAllPlayers(server, game!.players)
+              break;
+            /** admin command to add a given item to given player */
+            case 'addItem':
+              // if (player instanceof Player) player.buyItem();
+              sendAllPlayers(server, game!.players)
+              break;
+            default:
+              break;
+          }
         }
       });
 
@@ -161,7 +213,7 @@ server.register(async function (server) {
         let thisPlayer = game!.getPlayerById(clientId);
         if (thisPlayer instanceof Player) {
           thisPlayer.die();
-          game?.applyPlayerDeathState();
+          sendDeadPlayers(server, game!.applyPlayerDeathState());
         }
         messageBuilder(server, clientId + "$$disconnected");
       });

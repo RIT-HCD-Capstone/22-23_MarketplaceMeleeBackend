@@ -92,6 +92,10 @@ export default class Player {
   ready(): void {
     this.readyState = true;
   }
+  /** ready down */
+  unready(): void {
+    this.readyState = false;
+  }
 
   /** mods, crush his skull */
   die(): void {

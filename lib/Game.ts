@@ -59,19 +59,23 @@ export default class Game {
   }
 
   checkPlayerReadyState(): boolean {
-    function eachPlayer(player: Player): boolean {
-      if (player.readyState) return true;
-      return false;
-    }
-    return this.players.every(eachPlayer);
+    this.players.forEach(player => {
+      if (player.readyState === false) return false;
+    })
+    return true
   }
 
   checkPlayerStanceState(): boolean {
-    function eachPlayer(player: Player): boolean {
-      if (player.stance !== null) return true;
-      return false;
-    }
-    return this.players.every(eachPlayer);
+    this.players.forEach(player => {
+      if (player.stance === null) return false;
+    })
+    return true
+  }
+
+  unreadyAllPlayers(): void {
+    this.players.forEach(player => {
+      player.unready()
+    })
   }
 
   playerStanceResolve(player: Player, targetedPlayer?: Player): void {
@@ -94,12 +98,16 @@ export default class Game {
       player.value = player.value - DECAY_VALUES[this.turn];
     };
     this.players.every(decay);
+    this.applyPlayerDeathState()
   }
 
-  applyPlayerDeathState(): void {
+  applyPlayerDeathState(): Player[] {
+    let deadPlayers: Player[] = []
     this.players.forEach((player, index) => {
-      if (player.playerAlive === false) this.players.splice(index, 1);
+      if (player.value <= 0) player.die()
+      if (player.playerAlive === false) deadPlayers = deadPlayers.concat(this.players.splice(index, 1));
     });
+    return deadPlayers
   }
 
   changeGameState(state: GameState): boolean {
@@ -122,28 +130,32 @@ export default class Game {
         // TODO trigger event
         return true;
       case "calculate":
-        if (!this.checkPlayerReadyState()) return false;
+        // if (!this.checkPlayerReadyState()) return false;
         this.turnState = "calculate";
         this.calcTurnOrder();
         return true;
       case "shop":
         if (!this.shopEnabled) this.changeTurnState("move");
         this.turnState = "shop";
+        this.unreadyAllPlayers()
         return true;
       case "move":
-        if (!this.checkPlayerReadyState()) return false;
+        // if (!this.checkPlayerReadyState()) return false;
         this.turnState = "move";
+        this.unreadyAllPlayers()
         return true;
       case "declareStance":
-        if (!this.checkPlayerReadyState()) return false;
+        // if (!this.checkPlayerReadyState()) return false;
         this.turnState = "declareStance";
+        this.unreadyAllPlayers()
         return true;
       case "resolve":
-        if (!this.checkPlayerReadyState()) return false;
+        // if (!this.checkPlayerReadyState()) return false;
         this.turnState = "resolve";
         this.applyPlayerDecay();
         this.applyPlayerDeathState();
         this.turn++;
+        this.unreadyAllPlayers()
         return true;
     }
   }
