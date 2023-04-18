@@ -138,34 +138,38 @@ server.register(async function (server) {
         let targetedPlayer = game!.getPlayerById(messageData[4]);
         if (messageSource === 'CLIENT') {
           switch (command) {
+            case 'ready':
+              if (player instanceof Player) player.ready();
+              break;
             case 'update':
               game!.players = JSON.parse(extra)
               break;
             /** sent when a client manually starts the game. */
             case "startGame":
               game?.changeGameState("play");
+              if (!(game?.changeTurnState("event"))) break
               messageBuilder(server, "gameEvent");
               sendAllPlayers(server, game!.players)
-              game?.changeTurnState('event')
               break;
             /** sent from the shop screen with the name of the intended purchase */
             case "shop":
-              game?.changeTurnState('shop')
+              if (!(game?.changeTurnState("shop"))) break
               if (player instanceof Player) player.buyItem(extra);
               break;
             case "doneShopping":
-              game?.changeTurnState("move");
+              if (!(game?.changeTurnState("move"))) break
               messageBuilder(server, "gameMove");
               sendAllPlayers(server, game!.players)
               break;
             /** sent when a player is done moving, triggers attempt to change to declareStance */
             case "move":
               // TODO this does not work due to the front-end design of the declareStance overlay
-              game?.changeTurnState("declareStance");
+              if (!(game?.changeTurnState("declareStance"))) break
               messageBuilder(server, "gameStance");
               break;
             /** sent when a player has declaredStance, triggers attempt to change to resolve */
             case "declareStance":
+              if (!(game?.changeTurnState("resolve"))) break
               if (player instanceof Player) {
                 if (targetedPlayer instanceof Player) {
                   game?.playerStanceResolve(player, targetedPlayer);
@@ -173,7 +177,6 @@ server.register(async function (server) {
                 }
                 game?.playerStanceResolve(player);
               }
-              game?.changeTurnState("resolve");
               sendAllPlayers(server, game!.players)
               messageBuilder(server, "gameResolve");
               break;
