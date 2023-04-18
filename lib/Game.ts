@@ -59,16 +59,12 @@ export default class Game {
   }
 
   checkPlayerReadyState(): boolean {
-    this.players.forEach(player => {
-      if (player.readyState === false) return false;
-    })
+    if (this.players.some((player) => { player.readyState === false })) return false;
     return true
   }
 
   checkPlayerStanceState(): boolean {
-    this.players.forEach(player => {
-      if (player.stance === null) return false;
-    })
+    if (this.players.some((player) => { player.stance === null })) return false;
     return true
   }
 
