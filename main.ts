@@ -145,6 +145,7 @@ server.register(async function (server) {
             case "startGame":
               game?.changeGameState("play");
               messageBuilder(server, "gameEvent");
+              sendAllPlayers(server, game!.players)
               break;
             /** sent from the shop screen with the name of the intended purchase */
             case "shop":
@@ -153,6 +154,7 @@ server.register(async function (server) {
             case "doneShopping":
               game?.changeTurnState("move");
               messageBuilder(server, "gameMove");
+              sendAllPlayers(server, game!.players)
               break;
             /** sent when a player is done moving, triggers attempt to change to declareStance */
             case "move":
@@ -190,11 +192,13 @@ server.register(async function (server) {
             /** admin command to increase specified player's value by 10 */
             case 'valueUp':
               if (player instanceof Player) player.value += 10;
+              sendDeadPlayers(server, game!.applyPlayerDeathState());
               sendAllPlayers(server, game!.players)
               break;
             /** admin command to decrease specified player's value by 10 */
             case 'valueDown':
               if (player instanceof Player) player.value -= 10;
+              sendDeadPlayers(server, game!.applyPlayerDeathState());
               sendAllPlayers(server, game!.players)
               break;
             /** admin command to add a given item to given player */

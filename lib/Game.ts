@@ -124,6 +124,7 @@ export default class Game {
       case "event":
         this.turnState = "event";
         // TODO trigger event
+        this.unreadyAllPlayers()
         return true;
       case "calculate":
         // if (!this.checkPlayerReadyState()) return false;
