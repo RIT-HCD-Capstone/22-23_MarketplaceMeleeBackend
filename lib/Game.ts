@@ -56,7 +56,8 @@ export default class Game {
   }
 
   checkPlayerReadyState(): boolean {
-    if (this.players.some((player) => { player.readyState === false })) return false;
+    const ready = (player: Player) => player.readyState === false;
+    if (this.players.some(ready)) return false;
     return true
   }
 
@@ -104,53 +105,57 @@ export default class Game {
   }
 
   changeGameState(state: GameState): boolean {
-    if (!this.checkPlayerReadyState()) return false;
-    switch (state) {
-      case "setup":
-        this.gameState = "setup";
-        return true;
-      case "play":
-        this.gameState = "play";
-        return true;
+    if (this.checkPlayerReadyState()) {
+      switch (state) {
+        case "setup":
+          this.gameState = "setup";
+          return true;
+        case "play":
+          this.gameState = "play";
+          return true;
+      }
     }
+    return false
   }
 
   changeTurnState(state: TurnState): boolean {
-    if (!this.checkPlayerReadyState()) return false;
-    switch (state) {
-      case "event":
-        this.turnState = "event";
-        // TODO trigger event
-        this.unreadyAllPlayers()
-        return true;
-      case "calculate":
-        // if (!this.checkPlayerReadyState()) return false;
-        this.turnState = "calculate";
-        this.calcTurnOrder();
-        return true;
-      case "shop":
-        if (!this.shopEnabled) this.changeTurnState("move");
-        this.turnState = "shop";
-        this.unreadyAllPlayers()
-        return true;
-      case "move":
-        // if (!this.checkPlayerReadyState()) return false;
-        this.turnState = "move";
-        this.unreadyAllPlayers()
-        return true;
-      case "declareStance":
-        // if (!this.checkPlayerReadyState()) return false;
-        this.turnState = "declareStance";
-        this.unreadyAllPlayers()
-        return true;
-      case "resolve":
-        // if (!this.checkPlayerReadyState()) return false;
-        this.turnState = "resolve";
-        this.applyPlayerDecay();
-        this.applyPlayerDeathState();
-        this.turn++;
-        this.unreadyAllPlayers()
-        return true;
+    if (this.checkPlayerReadyState()) {
+      switch (state) {
+        case "event":
+          this.turnState = "event";
+          // TODO trigger event
+          this.unreadyAllPlayers()
+          return true;
+        case "calculate":
+          // if (!this.checkPlayerReadyState()) return false;
+          this.turnState = "calculate";
+          this.calcTurnOrder();
+          return true;
+        case "shop":
+          if (!this.shopEnabled) this.changeTurnState("move");
+          this.turnState = "shop";
+          this.unreadyAllPlayers()
+          return true;
+        case "move":
+          // if (!this.checkPlayerReadyState()) return false;
+          this.turnState = "move";
+          this.unreadyAllPlayers()
+          return true;
+        case "declareStance":
+          // if (!this.checkPlayerReadyState()) return false;
+          this.turnState = "declareStance";
+          this.unreadyAllPlayers()
+          return true;
+        case "resolve":
+          // if (!this.checkPlayerReadyState()) return false;
+          this.turnState = "resolve";
+          this.applyPlayerDecay();
+          this.applyPlayerDeathState();
+          this.turn++;
+          this.unreadyAllPlayers()
+          return true;
+      }
     }
+    return false
   }
 }

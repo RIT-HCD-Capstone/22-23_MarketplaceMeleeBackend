@@ -57,16 +57,6 @@ const messageBuilder = (
   });
 };
 
-/** log a server message serverside */
-const serverLog = (message: string): void => {
-  console.log("SERVER:" + message);
-};
-
-/** log a client message serverside */
-const clientLog = (clientId: string, message: string): void => {
-  console.log("CLIENT:" + clientId + ":" + message);
-};
-
 /** tries to add a new player to the game */
 const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
   if (typeof game == null) {
@@ -80,7 +70,7 @@ const addPlayer = (server: FastifyInstance, playerId: string): boolean => {
     server,
     "newPlayer$$" + JSON.stringify(playerToSend),
   );
-  serverLog(" new player added to game: " + playerId);
+  console.log(" new player added to game: " + playerId);
   return true;
 };
 
@@ -111,7 +101,7 @@ server.register(async function (server) {
     (connection: SocketStream, _req: FastifyRequest) => {
       // on first connect
       let clientId: string = randomWords();
-      serverLog(" client connected - " + clientId);
+      console.log(" client connected - " + clientId);
       messageBuilder(server, "clientConnected$$" + clientId);
 
       if (game === null) {
@@ -127,7 +117,7 @@ server.register(async function (server) {
 
       connection.socket.on("message", (data) => {
         let message = data.toString();
-        clientLog(clientId, message);
+        console.log(clientId, message);
         let messageData = message.split("$$");
         let messageSource: string = messageData[0]
         let client: string = messageData[1];
@@ -141,12 +131,13 @@ server.register(async function (server) {
             case 'ready':
               if (player instanceof Player) player.ready();
               break;
-            case 'update':
-              game!.players = JSON.parse(extra)
-              break;
+            // case 'update':
+            //   game!.players = JSON.parse(extra)
+            //   break;
             /** sent when a client manually starts the game. */
             case "startGame":
-              game?.changeGameState("play");
+              console.log(game?.changeGameState("play"))
+              if (!(game?.changeGameState("play"))) break
               if (!(game?.changeTurnState("event"))) break
               messageBuilder(server, "gameEvent");
               sendAllPlayers(server, game!.players)
