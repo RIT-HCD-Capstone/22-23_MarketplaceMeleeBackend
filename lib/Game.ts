@@ -111,7 +111,7 @@ export default class Game {
     this.playerStances.forEach(action => {
       if (action.player instanceof Player) {
         player = <Player>this.getPlayerById(action.player.id)
-        // player.declareStance(action.stance)
+        if (action.stance === 'Act') player.act()
         if (action.target instanceof Player) {
           target = <Player>this.getPlayerById(action.target.id)
           if (action.stance === 'Attack') {
