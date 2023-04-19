@@ -1,4 +1,4 @@
-import Player from "./Player";
+import Player, { PlayerStance } from "./Player";
 
 /** Tracks if the game is setting up or in play. */
 type GameState = "setup" | "play";
@@ -14,12 +14,19 @@ type TurnState =
 /** Amount of Value every player will lose per turn, up to 8 turns (at least for now). */
 const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275];
 
+interface StanceToResolve {
+  player: Player,
+  target?: Player,
+  stance: PlayerStance,
+}
+
 export default class Game {
   players: Player[] = [];
   gameState: GameState = "setup";
   shopEnabled: boolean = false;
   turn: number = 0;
   turnState: TurnState = "event";
+  playerStances: StanceToResolve[] = []
 
   /** Creates a new Player, then adds it to the Game Player's array. */
   newPlayer(id: string): boolean {
@@ -72,19 +79,48 @@ export default class Game {
     })
   }
 
-  playerStanceResolve(player: Player, targetedPlayer?: Player): void {
-    let stance = player.stance;
-    switch (stance) {
-      case "Attack":
-        if (targetedPlayer instanceof Player) player.attack(targetedPlayer);
-        break;
-      case "Defend":
-        // nothing
-        break;
-      case "Act":
-        player.act();
-        break;
+  queuePlayerStance(player: Player, stance: PlayerStance, target?: Player): void {
+    if (target !== null) {
+      this.playerStances.push({
+        player: player,
+        target: target,
+        stance: stance,
+      })
+    } else {
+      this.playerStances.push(
+        {
+          player: player,
+          stance: stance,
+        }
+      )
     }
+  }
+
+  playerStanceResolve(): void {
+    // TODO work through the queue
+    let player: Player
+    let target: Player
+
+    this.playerStances.forEach(action => {
+      if (action.player instanceof Player) {
+        player = <Player>this.getPlayerById(action.player.id)
+        player.declareStance(action.stance)
+      };
+    })
+
+    this.playerStances.forEach(action => {
+      if (action.player instanceof Player) {
+        player = <Player>this.getPlayerById(action.player.id)
+        // player.declareStance(action.stance)
+        if (action.target instanceof Player) {
+          target = <Player>this.getPlayerById(action.target.id)
+          if (action.stance === 'Attack') {
+            player.attack(target)
+          }
+        }
+      };
+    })
+
   }
 
   applyPlayerDecay(): void {
@@ -145,9 +181,11 @@ export default class Game {
           // if (!this.checkPlayerReadyState()) return false;
           this.turnState = "declareStance";
           this.unreadyAllPlayers()
+          this.changeTurnState('resolve')
           return true;
         case "resolve":
           // if (!this.checkPlayerReadyState()) return false;
+          this.playerStanceResolve()
           this.turnState = "resolve";
           this.applyPlayerDecay();
           this.applyPlayerDeathState();

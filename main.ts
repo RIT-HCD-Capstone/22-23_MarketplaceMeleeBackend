@@ -5,7 +5,7 @@ import Fastify, {
 } from "fastify";
 import { SocketStream } from "@fastify/websocket";
 import Game from "./lib/Game";
-import Player, { ClientPlayerData } from "./lib/Player";
+import Player, { ClientPlayerData, PlayerStance } from "./lib/Player";
 var randomWords = require("random-words");
 
 // gamedata
@@ -162,11 +162,12 @@ server.register(async function (server) {
             case "declareStance":
               if (!(game?.changeTurnState("resolve"))) break
               if (player instanceof Player) {
+                game.queuePlayerStance(player, <PlayerStance>extra)
                 if (targetedPlayer instanceof Player) {
-                  game?.playerStanceResolve(player, targetedPlayer);
+                  game.queuePlayerStance(player, <PlayerStance>extra, targetedPlayer)
                   break;
                 }
-                game?.playerStanceResolve(player);
+                // game?.playerStanceResolve();
               }
               sendAllPlayers(server, game!.players)
               messageBuilder(server, "gameResolve");
