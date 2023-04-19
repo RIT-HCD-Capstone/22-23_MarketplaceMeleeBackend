@@ -11,8 +11,8 @@ type TurnState =
   | "declareStance" // players declare their stance: 'Act', 'Defend', or 'Act'.
   | "resolve"; // essentially a second "calculate", informs a player if they have died and removes them from the game
 
-/** Amount of Value every player will lose per turn, up to 8 turns (at least for now). */
-const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275];
+/** Amount of Value every player will lose per turn, up to 10 turns (at least for now). */
+const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275, 445, 720, 1165, 1885];
 
 interface StanceToResolve {
   player: Player,
