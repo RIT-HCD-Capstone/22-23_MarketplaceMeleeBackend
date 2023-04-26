@@ -163,7 +163,6 @@ export default class Game {
           this.unreadyAllPlayers()
           return true;
         case "calculate":
-          // if (!this.checkPlayerReadyState()) return false;
           this.turnState = "calculate";
           this.calcTurnOrder();
           return true;
@@ -173,18 +172,15 @@ export default class Game {
           this.unreadyAllPlayers()
           return true;
         case "move":
-          // if (!this.checkPlayerReadyState()) return false;
           this.turnState = "move";
           this.unreadyAllPlayers()
           return true;
         case "declareStance":
-          // if (!this.checkPlayerReadyState()) return false;
           this.turnState = "declareStance";
           this.unreadyAllPlayers()
           this.changeTurnState('resolve')
           return true;
         case "resolve":
-          // if (!this.checkPlayerReadyState()) return false;
           this.playerStanceResolve()
           this.turnState = "resolve";
           this.applyPlayerDecay();

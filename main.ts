@@ -6,6 +6,7 @@ import Fastify, {
 import { SocketStream } from "@fastify/websocket";
 import Game from "./lib/Game";
 import Player, { ClientPlayerData, PlayerStance } from "./lib/Player";
+import Item, { AllItems } from "./lib/Item";
 var randomWords = require("random-words");
 
 // gamedata
@@ -94,6 +95,16 @@ const sendDeadPlayers = (server: FastifyInstance, deadPlayers: Player[]): void =
   messageBuilder(server, 'playerDeath$$' + JSON.stringify(deadPlayers))
 }
 
+const sendItems = (server: FastifyInstance): void => {
+  let sendableItems: Item[] = []
+
+  for (let index = 0; index < 3; index++) {
+    const item = AllItems[Math.floor(Math.random() * AllItems.length)];
+    sendableItems.push(item)
+  }
+  messageBuilder(server, 'shopItems$$' + JSON.stringify(sendableItems))
+}
+
 server.register(async function (server) {
   server.get(
     "/socket",
@@ -131,21 +142,24 @@ server.register(async function (server) {
             case 'ready':
               if (player instanceof Player) player.ready();
               break;
-            // case 'update':
-            //   game!.players = JSON.parse(extra)
-            //   break;
             /** sent when a client manually starts the game. */
             case "startGame":
               console.log(game?.changeGameState("play"))
               if (!(game?.changeGameState("play"))) break
               if (!(game?.changeTurnState("event"))) break
               messageBuilder(server, "gameEvent");
+              sendItems(server);
               sendAllPlayers(server, game!.players)
               break;
             /** sent from the shop screen with the name of the intended purchase */
             case "shop":
               if (!(game?.changeTurnState("shop"))) break
+              sendItems(server);
               if (player instanceof Player) player.buyItem(extra);
+              break;
+            case "requestNewItems":
+              // TODO send array of 3 items
+              sendItems(server);
               break;
             case "doneShopping":
               if (!(game?.changeTurnState("move"))) break
@@ -154,7 +168,6 @@ server.register(async function (server) {
               break;
             /** sent when a player is done moving, triggers attempt to change to declareStance */
             case "move":
-              // TODO this does not work due to the front-end design of the declareStance overlay
               if (!(game?.changeTurnState("declareStance"))) break
               messageBuilder(server, "gameStance");
               break;
@@ -167,7 +180,6 @@ server.register(async function (server) {
                   game.queuePlayerStance(player, <PlayerStance>extra, targetedPlayer)
                   break;
                 }
-                // game?.playerStanceResolve();
               }
               sendAllPlayers(server, game!.players)
               messageBuilder(server, "gameResolve");
