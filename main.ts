@@ -80,8 +80,6 @@ const sendAllPlayers = (server: FastifyInstance, allPlayers: Player[]): void => 
 
   allPlayers.forEach(player => {
     let sendable = player.export()
-    // console.log('adding playerid to sendablePlayers: ' + player.id)
-    // console.log('adding sendableid to sendablePlayers: ' + sendable.id)
     sendablePlayers.push(sendable);
   })
 
@@ -158,7 +156,6 @@ server.register(async function (server) {
               if (player instanceof Player) player.buyItem(extra);
               break;
             case "requestNewItems":
-              // TODO send array of 3 items
               sendItems(server);
               break;
             case "doneShopping":
