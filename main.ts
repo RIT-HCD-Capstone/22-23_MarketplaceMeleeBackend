@@ -164,14 +164,20 @@ server.register(async function (server) {
               break;
             /** sent from the shop screen with the name of the intended purchase */
             case "shop":
-              // if (!(game?.changeTurnState("shop"))) break
-              // sendItems(server);
               if (player instanceof Player) player.buyItem(extra);
               console.log('player bbought item: ' + extra)
               sendAllPlayers(server, game!.players)
               break;
             case "requestNewItems":
+              if (player instanceof Player) {
+                if (player.value > 5) {
+                  player.value -= 5
+                } else {
+                  break
+                }
+              };
               sendItems(server);
+              sendAllPlayers(server, game!.players)
               break;
             case "doneShopping":
               if (!(game?.changeTurnState("move"))) break
@@ -184,6 +190,7 @@ server.register(async function (server) {
               if (!(game?.changeTurnState("declareStance"))) break
               game?.changeTurnState("declareStance")
               messageBuilder(server, "gameStance");
+              sendAllPlayers(server, game!.players)
               break;
             /** sent when a player has declaredStance, triggers attempt to change to resolve */
             case "declareStance":
@@ -217,19 +224,19 @@ server.register(async function (server) {
             /** admin command to kill specified player */
             case 'killPlayer':
               if (player instanceof Player) player.die();
-              sendDeadPlayers(server, game!.applyPlayerDeathState());
+              // sendDeadPlayers(server, game!.applyPlayerDeathState());
               sendAllPlayers(server, game!.players)
               break;
             /** admin command to increase specified player's value by 10 */
             case 'valueUp':
               if (player instanceof Player) player.value += 10;
-              sendDeadPlayers(server, game!.applyPlayerDeathState());
+              // sendDeadPlayers(server, game!.applyPlayerDeathState());
               sendAllPlayers(server, game!.players)
               break;
             /** admin command to decrease specified player's value by 10 */
             case 'valueDown':
               if (player instanceof Player) player.value -= 10;
-              sendDeadPlayers(server, game!.applyPlayerDeathState());
+              // sendDeadPlayers(server, game!.applyPlayerDeathState());
               sendAllPlayers(server, game!.players)
               break;
             /** admin command to add a given item to given player */
@@ -248,7 +255,7 @@ server.register(async function (server) {
         let thisPlayer = game!.getPlayerById(clientId);
         if (thisPlayer instanceof Player) {
           thisPlayer.die();
-          sendDeadPlayers(server, game!.applyPlayerDeathState());
+          // sendDeadPlayers(server, game!.applyPlayerDeathState());
         }
         messageBuilder(server, clientId + "$$disconnected");
       });
