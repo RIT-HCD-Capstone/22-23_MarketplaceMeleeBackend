@@ -7,6 +7,7 @@ import { SocketStream } from "@fastify/websocket";
 import Game from "./lib/Game";
 import Player, { ClientPlayerData, PlayerStance } from "./lib/Player";
 import Item, { AllItems } from "./lib/Item";
+import { Events } from "./lib/Events";
 var randomWords = require("random-words");
 
 // gamedata
@@ -103,6 +104,14 @@ const sendItems = (server: FastifyInstance): void => {
   messageBuilder(server, 'shopItems$$' + JSON.stringify(sendableItems))
 }
 
+const sendEvent = (server: FastifyInstance) => {
+  messageBuilder(server, 'event$$' + JSON.stringify(Events[game?.turn!]))
+}
+
+const sendActiveObjective = (server: FastifyInstance) => {
+  messageBuilder(server, 'objective$$' + game?.chooseActiveObjective())
+}
+
 server.register(async function (server) {
   server.get(
     "/socket",
@@ -147,6 +156,8 @@ server.register(async function (server) {
               if (!(game?.changeTurnState("event"))) break
               messageBuilder(server, "gameEvent");
               sendItems(server);
+              sendEvent(server);
+              sendActiveObjective(server);
               sendAllPlayers(server, game!.players)
               break;
             /** sent from the shop screen with the name of the intended purchase */
@@ -180,6 +191,8 @@ server.register(async function (server) {
               }
               sendAllPlayers(server, game!.players)
               messageBuilder(server, "gameResolve");
+              sendEvent(server);
+              sendActiveObjective(server);
               break;
           }
         }

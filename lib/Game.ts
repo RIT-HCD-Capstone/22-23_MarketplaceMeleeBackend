@@ -15,9 +15,9 @@ type TurnState =
 const DECAY_VALUES = [0, 5, 15, 40, 65, 105, 170, 275, 445, 720, 1165, 1885];
 
 interface StanceToResolve {
-  player: Player,
-  target?: Player,
-  stance: PlayerStance,
+  player: Player;
+  target?: Player;
+  stance: PlayerStance;
 }
 
 export default class Game {
@@ -26,7 +26,7 @@ export default class Game {
   shopEnabled: boolean = false;
   turn: number = 0;
   turnState: TurnState = "event";
-  playerStances: StanceToResolve[] = []
+  playerStances: StanceToResolve[] = [];
 
   /** Creates a new Player, then adds it to the Game Player's array. */
   newPlayer(id: string): boolean {
@@ -65,62 +65,69 @@ export default class Game {
   checkPlayerReadyState(): boolean {
     const ready = (player: Player) => player.readyState === false;
     if (this.players.some(ready)) return false;
-    return true
+    return true;
   }
 
   checkPlayerStanceState(): boolean {
-    if (this.players.some((player) => { player.stance === null })) return false;
-    return true
+    if (
+      this.players.some((player) => {
+        player.stance === null;
+      })
+    ) return false;
+    return true;
   }
 
   unreadyAllPlayers(): void {
-    this.players.forEach(player => {
-      player.unready()
-    })
+    this.players.forEach((player) => {
+      player.unready();
+    });
   }
 
-  queuePlayerStance(player: Player, stance: PlayerStance, target?: Player): void {
+  queuePlayerStance(
+    player: Player,
+    stance: PlayerStance,
+    target?: Player,
+  ): void {
     if (target !== null) {
       this.playerStances.push({
         player: player,
         target: target,
         stance: stance,
-      })
+      });
     } else {
       this.playerStances.push(
         {
           player: player,
           stance: stance,
-        }
-      )
+        },
+      );
     }
   }
 
   playerStanceResolve(): void {
     // TODO work through the queue
-    let player: Player
-    let target: Player
+    let player: Player;
+    let target: Player;
 
-    this.playerStances.forEach(action => {
+    this.playerStances.forEach((action) => {
       if (action.player instanceof Player) {
-        player = <Player>this.getPlayerById(action.player.id)
-        player.declareStance(action.stance)
-      };
-    })
+        player = <Player>this.getPlayerById(action.player.id);
+        player.declareStance(action.stance);
+      }
+    });
 
-    this.playerStances.forEach(action => {
+    this.playerStances.forEach((action) => {
       if (action.player instanceof Player) {
-        player = <Player>this.getPlayerById(action.player.id)
-        if (action.stance === 'Act') player.act()
+        player = <Player>this.getPlayerById(action.player.id);
+        if (action.stance === "Act") player.act();
         if (action.target instanceof Player) {
-          target = <Player>this.getPlayerById(action.target.id)
-          if (action.stance === 'Attack') {
-            player.attack(target)
+          target = <Player>this.getPlayerById(action.target.id);
+          if (action.stance === "Attack") {
+            player.attack(target);
           }
         }
-      };
-    })
-
+      }
+    });
   }
 
   applyPlayerDecay(): void {
@@ -128,16 +135,24 @@ export default class Game {
       player.value = player.value - DECAY_VALUES[this.turn];
     };
     this.players.every(decay);
-    this.applyPlayerDeathState()
+    this.applyPlayerDeathState();
   }
 
   applyPlayerDeathState(): Player[] {
-    let deadPlayers: Player[] = []
+    let deadPlayers: Player[] = [];
     this.players.forEach((player, index) => {
-      if (player.value <= 0) player.die()
-      if (player.playerAlive === false) deadPlayers = deadPlayers.concat(this.players.splice(index, 1));
+      if (player.value <= 0) player.die();
+      if (player.playerAlive === false) {
+        deadPlayers = deadPlayers.concat(this.players.splice(index, 1));
+      }
     });
-    return deadPlayers
+    return deadPlayers;
+  }
+
+  chooseActiveObjective(): number {
+    const clamp = (num: number, min: number, max: number) =>
+      Math.min(Math.max(num, min), max);
+    return clamp(Math.random(), 0, this.players.length - 1);
   }
 
   changeGameState(state: GameState): boolean {
@@ -151,7 +166,7 @@ export default class Game {
           return true;
       }
     }
-    return false
+    return false;
   }
 
   changeTurnState(state: TurnState): boolean {
@@ -160,7 +175,7 @@ export default class Game {
         case "event":
           this.turnState = "event";
           // TODO trigger event
-          this.unreadyAllPlayers()
+          this.unreadyAllPlayers();
           return true;
         case "calculate":
           this.turnState = "calculate";
@@ -169,27 +184,27 @@ export default class Game {
         case "shop":
           if (!this.shopEnabled) this.changeTurnState("move");
           this.turnState = "shop";
-          this.unreadyAllPlayers()
+          this.unreadyAllPlayers();
           return true;
         case "move":
           this.turnState = "move";
-          this.unreadyAllPlayers()
+          this.unreadyAllPlayers();
           return true;
         case "declareStance":
           this.turnState = "declareStance";
-          this.unreadyAllPlayers()
-          this.changeTurnState('resolve')
+          this.unreadyAllPlayers();
+          this.changeTurnState("resolve");
           return true;
         case "resolve":
-          this.playerStanceResolve()
+          this.playerStanceResolve();
           this.turnState = "resolve";
           this.applyPlayerDecay();
           this.applyPlayerDeathState();
           this.turn++;
-          this.unreadyAllPlayers()
+          this.unreadyAllPlayers();
           return true;
       }
     }
-    return false
+    return false;
   }
 }
