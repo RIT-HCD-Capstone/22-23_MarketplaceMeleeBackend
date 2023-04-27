@@ -76,7 +76,7 @@ export default class Game {
   }
 
   unreadyAllPlayers(): void {
-    this.players.forEach((player) => {
+    this.players.map((player) => {
       player.unready();
     });
   }
@@ -103,10 +103,6 @@ export default class Game {
   }
 
   playerStanceResolve(): void {
-    // TODO work through the queue
-    // let player: Player;
-    // let target: Player;
-
     this.playerStances.map(action => {
       if (action.player instanceof Player) {
         let player = <Player>this.getPlayerById(action.player.id);
@@ -115,12 +111,6 @@ export default class Game {
         console.log(player.value)
       }
     })
-    // this.playerStances.forEach((action) => {
-    //   if (action.player instanceof Player) {
-    //     player = <Player>this.getPlayerById(action.player.id);
-    //     player.declareStance(action.stance);
-    //   }
-    // });
 
     this.playerStances.map(action => {
       if (action.player instanceof Player) {
@@ -143,8 +133,6 @@ export default class Game {
       }
     })
 
-    // this.playerStances.forEach((action) => {
-    // });
     /** when done, wipe out the queue till next turn */
     this.playerStances = []
   }
@@ -159,15 +147,10 @@ export default class Game {
     this.applyPlayerDeathState();
   }
 
-  applyPlayerDeathState(): Player[] {
-    let deadPlayers: Player[] = [];
-    this.players.forEach((player, index) => {
-      if (player.value <= 0) player.die();
-      if (player.playerAlive === false) {
-        deadPlayers = deadPlayers.concat(this.players.splice(index, 1));
-      }
-    });
-    return deadPlayers;
+  applyPlayerDeathState(): void {
+    this.players.map(player => {
+      if (player.value <= 0) player.die()
+    })
   }
 
   chooseActiveObjective(): number {
