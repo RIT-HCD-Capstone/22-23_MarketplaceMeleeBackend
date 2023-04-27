@@ -48,15 +48,42 @@ export default class Player {
 
   /** gain 50 value */
   act(): void {
-    this.value = this.value + 50;
+    let actModifier: number = 0;
+    this.items.map((item) => {
+      if (item.effect.stat === "Value") {
+        if (item.effect.type === '+') actModifier = actModifier + item.effect.amount;
+        if (item.consumable) item.numUses! -= 1
+        this.value = this.value + 50 + actModifier;
+      }
+    });
+    this.items.map((item) => {
+      if (item.effect.stat === "Value") {
+        if (item.effect.type === 'x') actModifier = actModifier * item.effect.amount;
+        if (item.consumable) item.numUses! -= 1
+        this.value = this.value + (50 * actModifier);
+      }
+    });
   }
+
+  // /** The stat that the item effects */
+  // export type AffectedStats = "Attack" | "Defend" | "Range" | "Value";
+  // /** the type of effect */
+  // export type EffectType = "+" | "x";
 
   /** Calculate the current Attack stat, inclusive of item modifiers. */
   statAttack(): number {
     let attackModifier: number = 0;
-    this.items.forEach((item) => {
-      if (item.effect.stat !== "Attack") { /* do nothing */ }
-      attackModifier = attackModifier + item.effect.amount;
+    this.items.map((item) => {
+      if (item.effect.stat === "Attack") {
+        if (item.effect.type === '+') attackModifier = attackModifier + item.effect.amount;
+        if (item.consumable) item.numUses! -= 1
+      }
+    });
+    this.items.map((item) => {
+      if (item.effect.stat === "Attack") {
+        if (item.effect.type === 'x') attackModifier = attackModifier * item.effect.amount;
+        if (item.consumable) item.numUses! -= 1
+      }
     });
     return this.baseStatAttack + attackModifier;
   }
@@ -64,9 +91,17 @@ export default class Player {
   /** Calculate the current Defend stat, inclusive of item modifiers. */
   statDefend(): number {
     let defendModifier: number = 0;
-    this.items.forEach((item) => {
-      if (item.effect.stat !== "Defend") { /* do nothing */ }
-      defendModifier = defendModifier + item.effect.amount;
+    this.items.map((item) => {
+      if (item.effect.stat === "Defend") {
+        if (item.effect.type === '+') defendModifier = defendModifier + item.effect.amount;
+        if (item.consumable) item.numUses! -= 1
+      }
+    });
+    this.items.map((item) => {
+      if (item.effect.stat === "Defend") {
+        if (item.effect.type === 'x') defendModifier = defendModifier * item.effect.amount;
+        if (item.consumable) item.numUses! -= 1
+      }
     });
     return this.baseStatDefend + defendModifier;
   }
@@ -76,14 +111,14 @@ export default class Player {
     this.stance = stance;
   }
 
-  /** Prevent players from buying down to or below 0 value. */
+  /** Tries to buy an item with the given name. Prevents players from buying down to or below 0 value. */
   buyItem(itemName: string): boolean {
     console.log('buying item: ' + itemName)
     AllItems.map((item) => {
       if (item.name === itemName) {
-        this.items.push(item);
         if (item.price >= this.value) return false;
         this.value -= item.price;
+        this.items.push(item);
       }
     });
     return true;
