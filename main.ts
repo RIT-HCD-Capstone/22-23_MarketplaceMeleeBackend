@@ -130,7 +130,6 @@ server.register(async function (server) {
 
       addPlayer(server, clientId);
 
-      // console.log(game.players)
       sendAllPlayers(server, game.players)
 
       connection.socket.on("message", (data) => {
@@ -186,9 +185,9 @@ server.register(async function (server) {
                 game.queuePlayerStance(player, <PlayerStance>extra)
                 if (targetedPlayer instanceof Player) {
                   game.queuePlayerStance(player, <PlayerStance>extra, targetedPlayer)
-                  break;
                 }
               }
+              console.log('declareStance finished queueing stances')
               sendAllPlayers(server, game!.players)
               messageBuilder(server, "gameResolve");
               sendEvent(server);

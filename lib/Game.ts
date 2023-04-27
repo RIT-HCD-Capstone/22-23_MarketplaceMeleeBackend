@@ -109,6 +109,7 @@ export default class Game {
     let player: Player;
     let target: Player;
 
+    // this.playerStances.map()
     this.playerStances.forEach((action) => {
       if (action.player instanceof Player) {
         player = <Player>this.getPlayerById(action.player.id);
@@ -134,7 +135,7 @@ export default class Game {
     const decay = (player: Player): void => {
       player.value = player.value - DECAY_VALUES[this.turn];
     };
-    this.players.every(decay);
+    this.players.map(player => decay(player))
     this.applyPlayerDeathState();
   }
 
