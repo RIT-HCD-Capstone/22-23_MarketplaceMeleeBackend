@@ -42,8 +42,6 @@ export default class Game {
     let playerFound: Player = new Player();
     let foundPlayer: boolean = false;
     this.players.forEach((player) => {
-      // console.log('player id: ' + player.id)
-      // console.log('passed id: ' + id)
       if (player.id === id) {
         playerFound = player;
         foundPlayer = true;
@@ -106,36 +104,58 @@ export default class Game {
 
   playerStanceResolve(): void {
     // TODO work through the queue
-    let player: Player;
-    let target: Player;
+    // let player: Player;
+    // let target: Player;
 
-    // this.playerStances.map()
-    this.playerStances.forEach((action) => {
+    this.playerStances.map(action => {
       if (action.player instanceof Player) {
-        player = <Player>this.getPlayerById(action.player.id);
+        let player = <Player>this.getPlayerById(action.player.id);
+        console.log('declarestance')
         player.declareStance(action.stance);
+        console.log(player.value)
       }
-    });
+    })
+    // this.playerStances.forEach((action) => {
+    //   if (action.player instanceof Player) {
+    //     player = <Player>this.getPlayerById(action.player.id);
+    //     player.declareStance(action.stance);
+    //   }
+    // });
 
-    this.playerStances.forEach((action) => {
+    this.playerStances.map(action => {
       if (action.player instanceof Player) {
-        player = <Player>this.getPlayerById(action.player.id);
+        let player = <Player>this.getPlayerById(action.player.id);
+        console.log('declarestance act')
         if (action.stance === "Act") player.act();
+        console.log(player.value)
         if (action.target instanceof Player) {
-          target = <Player>this.getPlayerById(action.target.id);
+          let target = <Player>this.getPlayerById(action.target.id);
+          console.log('declarestance attack')
           if (action.stance === "Attack") {
-            player.attack(target);
+            this.players.map(gamePlayer => {
+              if (gamePlayer.id === target.id) {
+                gamePlayer = player.attack(target);
+              }
+            })
           }
+          console.log(player.value)
         }
       }
-    });
+    })
+
+    // this.playerStances.forEach((action) => {
+    // });
+    /** when done, wipe out the queue till next turn */
+    this.playerStances = []
   }
 
   applyPlayerDecay(): void {
-    const decay = (player: Player): void => {
+    console.log('applying decay')
+    this.players.map(player => {
+      console.log(player.value)
       player.value = player.value - DECAY_VALUES[this.turn];
-    };
-    this.players.map(player => decay(player))
+      console.log(player.value)
+    })
     this.applyPlayerDeathState();
   }
 
@@ -172,6 +192,7 @@ export default class Game {
 
   changeTurnState(state: TurnState): boolean {
     if (this.checkPlayerReadyState()) {
+      console.log('changing state')
       switch (state) {
         case "event":
           this.turnState = "event";
@@ -197,6 +218,7 @@ export default class Game {
           this.changeTurnState("resolve");
           return true;
         case "resolve":
+          console.log('turnState resolve')
           this.playerStanceResolve();
           this.turnState = "resolve";
           this.applyPlayerDecay();

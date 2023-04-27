@@ -118,6 +118,9 @@ server.register(async function (server) {
     { websocket: true },
     (connection: SocketStream, _req: FastifyRequest) => {
       // on first connect
+
+      if (game !== null && game?.gameState !== 'setup') connection.end()
+
       let clientId: string = randomWords();
       console.log(" client connected - " + clientId);
       messageBuilder(server, "clientConnected$$" + clientId);
@@ -161,37 +164,47 @@ server.register(async function (server) {
               break;
             /** sent from the shop screen with the name of the intended purchase */
             case "shop":
-              if (!(game?.changeTurnState("shop"))) break
-              sendItems(server);
+              // if (!(game?.changeTurnState("shop"))) break
+              // sendItems(server);
               if (player instanceof Player) player.buyItem(extra);
+              console.log('player bbought item: ' + extra)
+              sendAllPlayers(server, game!.players)
               break;
             case "requestNewItems":
               sendItems(server);
               break;
             case "doneShopping":
               if (!(game?.changeTurnState("move"))) break
+              game?.changeTurnState("move")
               messageBuilder(server, "gameMove");
               sendAllPlayers(server, game!.players)
               break;
             /** sent when a player is done moving, triggers attempt to change to declareStance */
             case "move":
               if (!(game?.changeTurnState("declareStance"))) break
+              game?.changeTurnState("declareStance")
               messageBuilder(server, "gameStance");
               break;
             /** sent when a player has declaredStance, triggers attempt to change to resolve */
             case "declareStance":
-              if (!(game?.changeTurnState("resolve"))) break
-              if (player instanceof Player) {
-                game.queuePlayerStance(player, <PlayerStance>extra)
-                if (targetedPlayer instanceof Player) {
-                  game.queuePlayerStance(player, <PlayerStance>extra, targetedPlayer)
-                }
+              if (player instanceof Player && !(targetedPlayer instanceof Player)) {
+                game?.queuePlayerStance(player, <PlayerStance>extra)
+                console.log('player being queued:' + player.id)
+                console.log('stance being queued:' + <PlayerStance>extra)
               }
-              console.log('declareStance finished queueing stances')
+              if (player instanceof Player && targetedPlayer instanceof Player) {
+                game?.queuePlayerStance(player, <PlayerStance>extra, targetedPlayer)
+                console.log('player being queued:' + player.id)
+                console.log('stance being queued:' + <PlayerStance>extra)
+                console.log('target being queued:' + targetedPlayer.id)
+              }
+              // console.log('declareStance finished queueing stances')
+              if (!(game?.changeTurnState("resolve"))) break
+              game?.changeTurnState("resolve")
               sendAllPlayers(server, game!.players)
-              messageBuilder(server, "gameResolve");
               sendEvent(server);
               sendActiveObjective(server);
+              messageBuilder(server, "gameResolve");
               break;
           }
         }

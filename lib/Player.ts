@@ -1,4 +1,4 @@
-import Item from "./Item";
+import Item, { AllItems } from "./Item";
 
 /** must include null so that having a stance by default doesn't cause a bug in gameplay */
 export type PlayerStance = "Attack" | "Defend" | "Act" | null;
@@ -48,7 +48,7 @@ export default class Player {
 
   /** gain 50 value */
   act(): void {
-    this.value += 50;
+    this.value = this.value + 50;
   }
 
   /** Calculate the current Attack stat, inclusive of item modifiers. */
@@ -77,14 +77,15 @@ export default class Player {
   }
 
   /** Prevent players from buying down to or below 0 value. */
-  buyItem(item: string): boolean {
-    let wantItem: Item;
-    this.items.forEach((_item) => {
-      if (_item.name === item) wantItem = _item;
+  buyItem(itemName: string): boolean {
+    console.log('buying item: ' + itemName)
+    AllItems.map((item) => {
+      if (item.name === itemName) {
+        this.items.push(item);
+        if (item.price >= this.value) return false;
+        this.value -= item.price;
+      }
     });
-    if (wantItem!.price >= this.value) return false;
-    this.items.push(wantItem!);
-    this.value -= wantItem!.price;
     return true;
   }
 
