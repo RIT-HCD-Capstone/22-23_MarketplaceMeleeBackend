@@ -49,20 +49,28 @@ export default class Player {
   /** gain 50 value */
   act(): void {
     let actModifier: number = 0;
-    this.items.map((item) => {
-      if (item.effect.stat === "Value") {
-        if (item.effect.type === '+') actModifier = actModifier + item.effect.amount;
-        if (item.consumable) item.numUses! -= 1
-        this.value = this.value + 50 + actModifier;
-      }
-    });
-    this.items.map((item) => {
-      if (item.effect.stat === "Value") {
-        if (item.effect.type === 'x') actModifier = actModifier * item.effect.amount;
-        if (item.consumable) item.numUses! -= 1
-        this.value = this.value + (50 * actModifier);
-      }
-    });
+    if (this.items.length > 0) {
+      this.items.map((item) => {
+        if (item.effect.stat === "Value") {
+          if (item.effect.type === '+') {
+            actModifier = actModifier + item.effect.amount;
+            if (item.consumable) item.numUses! -= 1
+            this.value = this.value + 50 + actModifier
+          };
+        }
+      });
+      this.items.map((item) => {
+        if (item.effect.stat === "Value") {
+          if (item.effect.type === 'x') {
+            actModifier = actModifier * item.effect.amount;
+            if (item.consumable) item.numUses! -= 1
+            this.value = this.value + (50 * actModifier)
+          }
+        }
+      });
+    } else {
+      this.value = this.value + 50
+    }
   }
 
   // /** The stat that the item effects */
