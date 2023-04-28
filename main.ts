@@ -7,7 +7,7 @@ import { SocketStream } from "@fastify/websocket";
 import Game from "./lib/Game";
 import Player, { ClientPlayerData, PlayerStance } from "./lib/Player";
 import Item, { AllItems } from "./lib/Item";
-import { Events } from "./lib/Events";
+import { YearlyEvents } from "./lib/Events";
 var randomWords = require("random-words");
 
 // gamedata
@@ -105,7 +105,7 @@ const sendItems = (server: FastifyInstance): void => {
 }
 
 const sendEvent = (server: FastifyInstance) => {
-  messageBuilder(server, 'event$$' + JSON.stringify(Events[game?.turn!]))
+  messageBuilder(server, 'event$$' + JSON.stringify(YearlyEvents[game?.turn!]))
 }
 
 const sendActiveObjective = (server: FastifyInstance) => {

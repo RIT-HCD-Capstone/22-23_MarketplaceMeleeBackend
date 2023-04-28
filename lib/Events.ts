@@ -1,4 +1,4 @@
-export let Events: Event[] = [
+export let YearlyEvents: YearlyEvent[] = [
   {
     year: 2011,
     description: "Skylanders: Spyro's Adventure releases",
@@ -87,7 +87,7 @@ export let Events: Event[] = [
   },
 ];
 
-export interface Event {
+export interface YearlyEvent {
   year: number;
   description: string;
   direction: "positive" | "negative";
